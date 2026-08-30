@@ -1,34 +1,19 @@
 import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import {resolve, sep} from 'node:path';
 
-rmSync('dist', { recursive: true, force: true });
+const workspace = resolve('.');
+const output = resolve('dist');
+if (!output.startsWith(workspace + sep) || output === workspace) throw new Error('Invalid build directory');
+rmSync(output, { recursive: true, force: true });
 mkdirSync('dist/client', { recursive: true });
 mkdirSync('dist/server', { recursive: true });
 mkdirSync('dist/client/assets', { recursive: true });
 
-for (const source of ['index.html', 'styles.css', 'script.js']) {
+for (const source of ['index.html', 'styles.css', 'theme.css', 'script.js']) {
   cpSync(source, `dist/client/${source}`);
 }
 
-const publicAssets = [
-  'favicon.png',
-  'hero-gourmet.webp',
-  'b4b2f3ca2a6bce1a.webp',
-  'logo-reinaldo-quoos.webp',
-  'tempero-amor.jpg',
-  'mesa-gourmet.jpg',
-  'coffee-break.jpg',
-  'feijoada.jpg',
-  'picnic-gourmet.jpg',
-  'chef-reinaldo.jpg',
-  'buffet-fresco.jpg',
-  'canapes.jpg',
-  'a8028d5be1222ab3.webp',
-  'e2a36f3a587bb5bf.webp'
-];
-
-for (const asset of publicAssets) {
-  cpSync(`assets/${asset}`, `dist/client/assets/${asset}`);
-}
+cpSync('assets/media', 'dist/client/assets/media', {recursive: true});
 
 writeFileSync('dist/server/index.js', `export default {
   async fetch(request, env) {

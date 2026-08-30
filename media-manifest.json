@@ -1,0 +1,132 @@
+{
+  "tempero": {
+    "generated_size": [
+      941,
+      1672
+    ],
+    "export_size": [
+      2161,
+      3840
+    ],
+    "file": "tempero-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "mesa": {
+    "generated_size": [
+      941,
+      1672
+    ],
+    "export_size": [
+      2161,
+      3840
+    ],
+    "file": "mesa-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "coffee": {
+    "generated_size": [
+      1537,
+      1023
+    ],
+    "export_size": [
+      3840,
+      2556
+    ],
+    "file": "coffee-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "feijoada": {
+    "generated_size": [
+      941,
+      1672
+    ],
+    "export_size": [
+      2161,
+      3840
+    ],
+    "file": "feijoada-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "picnic": {
+    "generated_size": [
+      1254,
+      1254
+    ],
+    "export_size": [
+      3840,
+      3840
+    ],
+    "file": "picnic-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "buffet": {
+    "generated_size": [
+      1254,
+      1254
+    ],
+    "export_size": [
+      3840,
+      3840
+    ],
+    "file": "buffet-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "canapes": {
+    "generated_size": [
+      1672,
+      941
+    ],
+    "export_size": [
+      3840,
+      2161
+    ],
+    "file": "canapes-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "burgers": {
+    "generated_size": [
+      1672,
+      941
+    ],
+    "export_size": [
+      3840,
+      2161
+    ],
+    "file": "burgers-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "hero": {
+    "generated_size": [
+      1672,
+      941
+    ],
+    "export_size": [
+      3840,
+      2161
+    ],
+    "file": "hero-4k.webp",
+    "treatment": "AI edit + upscale; not native 4K"
+  },
+  "chef": {
+    "source_size": [
+      1254,
+      1254
+    ],
+    "export_size": [
+      3840,
+      3840
+    ],
+    "treatment": "Exact supplied portrait; delivery resize only"
+  },
+  "video": {
+    "source_resolution": [
+      1920,
+      1080
+    ],
+    "duration_seconds": 8,
+    "audio_removed": true,
+    "desktop": "hero-desktop.mp4",
+    "mobile": "hero-mobile.mp4",
+    "native_4k": false
+  }
+}
