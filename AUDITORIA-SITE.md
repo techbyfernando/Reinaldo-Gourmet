@@ -106,6 +106,8 @@ Executados testes automatizados locais de integridade dos arquivos, destinos int
 
 ## 9. Fontes consultadas
 
+Atualizacao da revisao visual: tambem foram realizados testes no navegador integrado, com os dois temas e larguras de 320 a 2560 px. Ajustes, resultados e limites estao em `VERIFICACAO-VISUAL.md`. Esses testes nao substituem a validacao em aparelhos reais indicada acima.
+
 - [Página inicial](https://www.reinaldoquoos.com.br/)
 - [A Cozinha](https://www.reinaldoquoos.com.br/a-cozinha/) e [O Gourmet](https://www.reinaldoquoos.com.br/o-gourmet/)
 - [Menu](https://www.reinaldoquoos.com.br/menu/): [Churrasco](https://www.reinaldoquoos.com.br/menu/churrasco/), [Comida mexicana](https://www.reinaldoquoos.com.br/menu/comida-mexicana/), [Boteco](https://www.reinaldoquoos.com.br/menu/comidinhas-de-boteco/), [Finger food](https://www.reinaldoquoos.com.br/menu/finger-food/), [Feijoada](https://www.reinaldoquoos.com.br/menu/feijoada/), [Hambúrguer](https://www.reinaldoquoos.com.br/menu/hamburguer-artesanal/), [Pratos personalizados](https://www.reinaldoquoos.com.br/menu/pratos-personalizados/)

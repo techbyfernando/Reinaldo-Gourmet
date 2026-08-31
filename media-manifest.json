@@ -118,6 +118,26 @@
     ],
     "treatment": "Exact supplied portrait; delivery resize only"
   },
+  "panela-horizontal": {
+    "reference": "tempero-1280.webp",
+    "generated_size": [1536, 1024],
+    "export_size": [3840, 2560],
+    "file": "panela-horizontal-3840.webp",
+    "responsive_widths": [640, 1280, 1920, 3840],
+    "treatment": "AI composition edit + upscale; not native 4K"
+  },
+  "logo-header-v3": {
+    "source_size": [1341, 1173],
+    "file": "logo-header-v3.webp",
+    "responsive_widths": [128, 256, 1341],
+    "treatment": "Supplied simplified logo; exact RGBA lossless master, resized delivery variants"
+  },
+  "logo-footer-v3": {
+    "source_size": [1536, 1024],
+    "file": "logo-footer-v3.webp",
+    "responsive_widths": [384, 768, 1536],
+    "treatment": "Supplied complete logo; exact RGBA lossless master, resized delivery variants"
+  },
   "video": {
     "source_resolution": [
       1920,

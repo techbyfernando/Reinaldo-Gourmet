@@ -38,3 +38,12 @@ Restore and enhance this exact photograph of miniature artisanal hamburgers on a
 
 Refine this existing culinary hero image, preserving its composition, plated food, hand sprinkling salt, copper saucepan, dark counter and warm bokeh. Improve microdetail and realistic light with understated premium editorial finish. Leave the left side dark and uncluttered for a website text overlay. No typography, letters or logos in the image. Landscape 4K delivery requested, 3840 x 2160.
 
+## Revisao de composicao — panela horizontal
+
+Edicao com ImageGen, usando `assets/media/tempero-1280.webp` como referencia. Resultado recebido em 1536 × 1024; entrega ampliada para 3840 × 2560, com variantes de 640, 1280 e 1920 pixels. Nao e captura nativa 4K. O novo enquadramento mostra panela, mao e tempero na mesma composicao, sem depender de sobreposicoes no layout.
+
+Use case: precise-object-edit. Edit target: supplied portrait photograph of a copper saucepan and a chef's hand sprinkling herbs. Recompose this same culinary scene into a horizontal 3:2 editorial photograph for a premium website content section. Show the entire copper saucepan bowl and the sprinkling fingers together, with the herb fall visibly connecting them. Move the camera back enough to leave generous breathing room on every edge, keeping the hand and pot within the central 75% so moderate responsive crops cannot cut them off. Retain the copper material, original warm dark kitchen atmosphere and natural skin. No face needed, no extra hands, no invented food, no text, no logos, no graphics. Natural light, refined realistic detail, restrained contrast. Output landscape 3840 x 2560 if supported, otherwise highest available quality.
+
+## Logos fornecidas nesta revisao
+
+A logo completa foi aplicada no rodape, e o monograma simplificado no cabecalho. Nenhuma das duas foi redesenhada. Os arquivos WebP integrais usam compressao sem perdas com preservacao exata dos pixels RGBA; as variantes menores sao somente redimensionamentos para carregamento responsivo. O rodape conserva uma base escura nos dois temas para manter legivel o texto claro da marca.
