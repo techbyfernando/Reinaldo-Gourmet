@@ -120,22 +120,47 @@
   },
   "panela-horizontal": {
     "reference": "tempero-1280.webp",
-    "generated_size": [1536, 1024],
-    "export_size": [3840, 2560],
+    "generated_size": [
+      1536,
+      1024
+    ],
+    "export_size": [
+      3840,
+      2560
+    ],
     "file": "panela-horizontal-3840.webp",
-    "responsive_widths": [640, 1280, 1920, 3840],
+    "responsive_widths": [
+      640,
+      1280,
+      1920,
+      3840
+    ],
     "treatment": "AI composition edit + upscale; not native 4K"
   },
   "logo-header-v3": {
-    "source_size": [1341, 1173],
+    "source_size": [
+      1341,
+      1173
+    ],
     "file": "logo-header-v3.webp",
-    "responsive_widths": [128, 256, 1341],
+    "responsive_widths": [
+      128,
+      256,
+      1341
+    ],
     "treatment": "Supplied simplified logo; exact RGBA lossless master, resized delivery variants"
   },
   "logo-footer-v3": {
-    "source_size": [1536, 1024],
+    "source_size": [
+      1536,
+      1024
+    ],
     "file": "logo-footer-v3.webp",
-    "responsive_widths": [384, 768, 1536],
+    "responsive_widths": [
+      384,
+      768,
+      1536
+    ],
     "treatment": "Supplied complete logo; exact RGBA lossless master, resized delivery variants"
   },
   "video": {
@@ -148,5 +173,96 @@
     "desktop": "hero-desktop.mp4",
     "mobile": "hero-mobile.mp4",
     "native_4k": false
+  },
+  "experiencia-feijoada": {
+    "source_size": [
+      1386,
+      1135
+    ],
+    "file": "experiencia-feijoada-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1386
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "experiencia-churrasco": {
+    "source_size": [
+      1086,
+      1448
+    ],
+    "file": "experiencia-churrasco-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1086
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "experiencia-buffet": {
+    "source_size": [
+      1086,
+      1448
+    ],
+    "file": "experiencia-buffet-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1086
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "experiencia-encontro": {
+    "source_size": [
+      1086,
+      1448
+    ],
+    "file": "experiencia-encontro-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1086
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "experiencia-frescor": {
+    "source_size": [
+      1448,
+      1086
+    ],
+    "file": "experiencia-frescor-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1448
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "experiencia-entradas": {
+    "source_size": [
+      1086,
+      1448
+    ],
+    "file": "experiencia-entradas-original.webp",
+    "responsive_widths": [
+      640,
+      960,
+      1086
+    ],
+    "treatment": "Supplied image, lossless native-size master; delivery downscaling only, no retouching or upscale"
+  },
+  "logo-footer-v4": {
+    "source_size": [
+      1536,
+      1024
+    ],
+    "file": "logo-footer-v4.png",
+    "responsive_widths": [
+      384,
+      768,
+      1536
+    ],
+    "treatment": "Exact supplied PNG with transparency, resized PNG delivery variants"
   }
 }

@@ -1,5 +1,30 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Atualizacao de conteudo e carrossel — 31/08/2026
+
+Substituida a antiga composicao da panela por um carrossel com as seis fotografias fornecidas. As imagens sao exibidas integralmente, sem recorte ou nova edicao. O primeiro quadro mostra a feijoada sendo servida. Avanco automatico a cada sete segundos, botoes anterior/proximo, selecao direta, pausa, teclado e gesto horizontal. A rotacao para ao interagir, receber foco, ficar fora da tela ou ocultar a aba. Movimento reduzido e economia de dados desativam o inicio automatico.
+
+O rodape usa o PNG fornecido, com arquivo integral identico ao anexo e variantes menores em PNG. A base do rodape fica escura nos dois temas para preservar as letras claras da logo, sem caixa ou moldura individual. A historia do chef foi incluida em nove paragrafos e comparada com o texto integral fornecido. Hifens e travessoes foram removidos dos textos exibidos e descricoes acessiveis; URLs e codigo foram preservados.
+
+Verificados no navegador os dois temas em 320, 390, 560, 700, 702, 768, 900, 1100, 1102, 1440 e 1920 px, sem transbordamento horizontal dos principais elementos, incluindo carrossel, biografia e parceiros. Inspecionados carrossel no desktop claro e celular escuro, parceiros no celular claro e biografia com fotografia fixa durante a leitura no desktop. Quatorze testes automatizados passaram, incluindo rotacao, pausa, foco, ocultacao, teclado, gestos, texto integral e preservacao dos controles existentes. Gestos e preferencia de movimento foram exercitados por simulacao automatizada, nao em aparelhos fisicos.
+
+### Midia e limites desta atualizacao
+
+Os anexos recebidos medem 1086 × 1448, 1448 × 1086 e 1386 × 1135 pixels; nao sao arquivos 4K nesta copia. Foram mantidos mestres WebP sem perdas na resolucao recebida, mais variantes menores para entrega. Nenhuma fotografia foi ampliada ou reconstruida nesta atualizacao.
+
+O video foi preservado sem alteracao. As ferramentas de video disponiveis nao oferecem uma garantia de edicao localizada somente nas tatuagens mantendo todo o restante intacto; nao foi substituido por uma nova geracao. Integridade confirmada por SHA256 dos dois arquivos de entrega antes/depois:
+
+- Desktop: `e57f6fa0af3246b7cbfc1b3e37951bb98782a24d750b512d2f5785c660e66c04`
+- Celular: `d73493b6a8e1368d7b08528c7d4103490f0c9572cd4807a2244f614700146e72`
+
+### Verificacao dos parceiros
+
+- Casa da Nina: dominio fornecido sem resolucao DNS nas tentativas HTTP e HTTPS. Nome social mantido como fornecido. O endereco [facebook.com/casadanina123](https://www.facebook.com/casadanina123/) aparece em uma [entrevista sobre a propria Casa da Nina](https://clubedejazz.com/as-ressonancias-de-louise-woolley/). A disponibilidade atual do perfil nao foi confirmada pelo ambiente de teste; o dominio antigo nao virou um botao ativo.
+- Chacara do Jua: dominio fornecido sem resolucao DNS. A [Secretaria de Turismo de Aruja](https://www.visitearuja.com.br/espaco_eventos) indica `chacaradojua.alboompro.com`, mas esse endereco exibiu "Website nao localizado" no navegador. Nao foi inventado um endereco de Facebook. Nome e dominio permanecem informativos, com caminho para consultar o contato com Reinaldo. O link atualizado foi solicitado ao usuario.
+- Museu da Imaginacao: mantido o dominio oficial atual [.org.br](https://museudaimaginacao.org.br/), corroborado pela pagina institucional indexada. O Facebook [museudaimaginacao](https://www.facebook.com/museudaimaginacao/) e citado em [referencia publica](https://www.avivaescolainfantil.com.br/blog/museu-da-imaginacao-um-lugar-incrivel-para-as-criancas/). A tentativa ao vivo no site apresentou erro de conexao SSL; nao se afirma verificacao integral da disponibilidade externa.
+
+As observacoes a seguir registram a revisao anterior e permanecem como historico.
+
 ## Ajustes entregues
 
 - Logo simplificada fornecida no cabecalho; logo completa fornecida no rodape. Proporcoes e transparencia preservadas, com variantes menores para carregamento responsivo.

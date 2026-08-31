@@ -1,5 +1,7 @@
 # Tratamento de imagens — 30/08/2026
 
+Atualizacao de 31/08/2026: as seis fotografias novas do carrossel foram fornecidas prontas pelo usuario. Nao passaram por geracao, retoque, ampliacao ou remocao de elementos nesta atualizacao, apenas codificacao sem perdas e reducao para variantes responsivas. A logo nova do rodape permanece PNG. O video nao foi modificado. Os tratamentos descritos abaixo sao de revisoes anteriores e das demais imagens da pagina.
+
 As fotografias do acervo foram editadas por IA usando os originais como referência. Detalhes podem ter sido reconstruídos; as imagens não devem ser apresentadas como registros documentais inalterados. A geração retornou arquivos menores que 4K. Os arquivos de entrega foram ampliados para 3840 pixels na maior dimensão, preservando as proporções, e receberam versões WebP responsivas. A foto nova do chef e a logo não foram redesenhadas. O favicon conserva a pimenta e a transparência do arquivo fornecido.
 
 ## tempero
