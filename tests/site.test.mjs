@@ -23,7 +23,7 @@ function element() {
     querySelectorAll(){return [];}, focus(){this.focused=true;}
   };
 }
-function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=false}={}) {
+function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=false,mobile=false}={}) {
   const selectors = Object.fromEntries(['[data-theme-toggle]','meta[name="theme-color"]','.menu-toggle','#mobile-menu','[data-hero-video]','[data-video-toggle]','[data-header]','[data-year]','input[name="data"]','#event-form','.hero'].map(key=>[key,element()]));
   const video = selectors['[data-hero-video]'];
   video.paused=true; video.loads=0;
@@ -49,7 +49,7 @@ function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=f
   const window={...element(),scrollY:0,location:{assign(url){this.url=url;}}};
   const context={document,window,navigator:{connection:{saveData}},Date,encodeURIComponent,
     localStorage:{getItem(key){if(blockedStorage)throw Error('denied');return stored.get(key);},setItem(key,value){if(blockedStorage)throw Error('denied');stored.set(key,value);}},
-    matchMedia(query){if(!mediaQueries.has(query)){const media=element();media.matches=query.includes('reduced-motion')&&reduced;mediaQueries.set(query,media);}return mediaQueries.get(query);},
+    matchMedia(query){if(!mediaQueries.has(query)){const media=element();media.matches=(query.includes('reduced-motion')&&reduced)||(query==='(max-width: 700px)'&&mobile);mediaQueries.set(query,media);}return mediaQueries.get(query);},
     requestAnimationFrame(fn){frames.set(++frameId,fn);return frameId;},cancelAnimationFrame(id){frames.delete(id);},
     FormData:class{constructor(form){this.form=form;}get(key){return this.form.data[key];}}
   };
@@ -184,7 +184,7 @@ test('theme controls work when browser storage is unavailable',()=>{
 });
 test('video loads muted once and supports pause, resume and tab visibility',()=>{
   const {video,selectors,document}=setup();
-  assert.equal(video.src,'assets/media/hero-desktop-v5.mp4');
+  assert.equal(video.src,'assets/media/hero-desktop-v6.mp4');
   assert.equal(video.muted,true);assert.equal(video.paused,false);assert.equal(video.loads,1);
   selectors['[data-video-toggle]'].emit('click');assert.equal(video.paused,true);
   document.hidden=true;document.emit('visibilitychange');
@@ -192,6 +192,9 @@ test('video loads muted once and supports pause, resume and tab visibility',()=>
   selectors['[data-video-toggle]'].emit('click');assert.equal(video.paused,false);
   document.hidden=true;document.emit('visibilitychange');assert.equal(video.paused,true);
   document.hidden=false;document.emit('visibilitychange');assert.equal(video.paused,false);assert.equal(video.loads,1);
+  const mobileVideo=setup({mobile:true}).video;
+  assert.equal(mobileVideo.src,'assets/media/hero-mobile-v6.mp4');
+  assert.equal(mobileVideo.muted,true);assert.equal(mobileVideo.paused,false);
 });
 test('reduced motion and data saver do not automatically download video',()=>{
   for(const options of [{reduced:true},{saveData:true}]){

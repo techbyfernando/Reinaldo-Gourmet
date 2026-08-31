@@ -1,5 +1,13 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Substituicao pelo novo video Full HD — 31/08/2026 (revisao 6)
+
+Substituido o video anterior pelo novo arquivo `Chef_plating_dish_for_video_202608311708.mp4`, confirmado em 1920 x 1080, 24 fps e oito segundos. O fundo desktop usa esta nova filmagem em Full HD. A entrega mobile deriva dela em 1280 x 720, para reduzir transferencia de dados. Ambos sao silenciosos e possuem inicio progressivo; os posters tambem foram extraidos do novo arquivo. Os nomes dos arquivos mudaram para evitar a exibicao da versao anterior em cache.
+
+No navegador, confirmados arquivo e resolucao desktop 1920 x 1080 em janela de 1440 pixels, entrega mobile 1280 x 720 em janela de 390 pixels, reproducao automatica sem som, loop e modo inline. Observado um ciclo completo, alem de pausa e retomada pelos controles. Sem transbordamento horizontal nas duas verificacoes. Os dezessete testes automatizados passaram, agora incluindo explicitamente a escolha do arquivo mobile. Carrossel, logos, temas, conteudo e categorias de evento permaneceram inalterados. Testes em janelas simuladas, nao em aparelhos fisicos.
+
+Esta revisao substitui a filmagem e as resolucoes de video descritas no historico abaixo.
+
 ## Faixa continua e novas midias — 31/08/2026 (revisao 5)
 
 O carrossel agora e uma faixa de seis fotografias com movimento continuo para a esquerda a 34 pixels por segundo. Uma segunda sequencia identica, fora da arvore de acessibilidade e sem foco, permite a passagem do fim ao inicio. A flutuacao suave de cada cartao usa a mesma fase nas duas sequencias. Os controles anterior/proximo fazem uma transicao suave; tambem ha pausa, teclado e arraste horizontal. Hover, foco, aba oculta e secao fora de vista interrompem o movimento intencionalmente. Movimento reduzido e economia de dados impedem o inicio automatico. Sem JavaScript, as fotos permanecem disponiveis em uma faixa com rolagem nativa.

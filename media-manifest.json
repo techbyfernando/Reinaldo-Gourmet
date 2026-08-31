@@ -164,17 +164,20 @@
     "treatment": "Supplied complete logo; exact RGBA lossless master, resized delivery variants"
   },
   "video": {
-    "source_file": "Chef_plating_dish_for_video_202608311501.mp4",
-    "source_sha256": "4603f5c1ae339c5362480ab31b6fc0a4d5ea6b03c8a70e2afab11fb9d975d7ef",
+    "source_file": "Chef_plating_dish_for_video_202608311708.mp4",
+    "source_sha256": "403b97da5d350e9cf5394341d6c37f29a6b973c82509a681794cf72087815426",
     "source_resolution": [
+      1920,
+      1080
+    ],
+    "mobile_resolution": [
       1280,
       720
     ],
-    "duration_seconds": 8,
     "audio_removed": true,
-    "desktop": "hero-desktop-v5.mp4",
-    "mobile": "hero-mobile-v5.mp4",
-    "treatment": "Desktop video stream copied without re-encoding; mobile downscaled to 960x540. No retouching or upscaling."
+    "desktop": "hero-desktop-v6.mp4",
+    "mobile": "hero-mobile-v6.mp4",
+    "treatment": "New supplied footage. Native desktop video stream; optimized smaller mobile delivery. Silent background playback, no upscaling."
   },
   "experiencia-feijoada": {
     "source_size": [

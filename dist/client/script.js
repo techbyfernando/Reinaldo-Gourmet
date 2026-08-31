@@ -61,7 +61,7 @@ function syncVideoButton() {
 }
 function loadVideo() {
   if (heroVideo.getAttribute('src')) return;
-  heroVideo.src = matchMedia('(max-width: 700px)').matches ? 'assets/media/hero-mobile-v5.mp4' : 'assets/media/hero-desktop-v5.mp4';
+  heroVideo.src = matchMedia('(max-width: 700px)').matches ? 'assets/media/hero-mobile-v6.mp4' : 'assets/media/hero-desktop-v6.mp4';
   heroVideo.muted = true;
   heroVideo.load();
 }
