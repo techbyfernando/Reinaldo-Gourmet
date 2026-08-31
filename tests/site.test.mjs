@@ -8,10 +8,15 @@ const html = readFileSync('index.html','utf8');
 
 function element() {
   return {
-    hidden:true, dataset:{}, attributes:{}, listeners:{}, children:{}, textContent:'',
+    hidden:true, dataset:{}, attributes:{}, listeners:{}, children:{}, textContent:'', style:{}, appended:[], width:2280,
     classList:{add(){},toggle(){}},
     setAttribute(key,value){this.attributes[key]=value;},
     getAttribute(key){return key==='src' ? this.src : this.attributes[key];},
+    removeAttribute(key){delete this.attributes[key];},
+    cloneNode(){return {...element(),attributes:{...this.attributes},querySelectorAll:this.querySelectorAll};},
+    append(child){this.appended.push(child);},
+    getBoundingClientRect(){return {width:this.width};},
+    setPointerCapture(id){this.pointerId=id;},
     addEventListener(name,handler){(this.listeners[name]??=[]).push(handler);},
     emit(name,event={}){for(const handler of this.listeners[name]??[]) handler(event);},
     querySelector(selector){return this.children[selector]??=element();},
@@ -28,23 +33,25 @@ function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=f
   const form=selectors['#event-form'];
   form.elements={tipo:element(),menu:element(),nome:element()};
   form.valid=true;form.reportValidity=()=>form.valid;
-  form.data={nome:'Maria Teste',tipo:'Evento corporativo',data:'',convidados:'50',cidade:'São Paulo',menu:'Churrasco',detalhes:'Sem amendoim'};
-  const choice=element();choice.dataset={event:'Evento corporativo',menu:'Finger food'};
+  form.data={nome:'Maria Teste',tipo:'Eventos Corporativos',data:'',convidados:'50',cidade:'São Paulo',menu:'Churrasco',detalhes:'Sem amendoim'};
+  const choice=element();choice.dataset={event:'Eventos Corporativos',menu:'Finger food'};
   const carousel=element();
   const slides=Array.from({length:6},(_,i)=>{const slide=element();slide.setAttribute('aria-label',`${i+1} de 6: Foto ${i+1}`);return slide;});
-  const dots=Array.from({length:6},(_,i)=>{const dot=element();dot.dataset.slideTo=String(i);return dot;});
-  const controls=[element(),element()];
-  carousel.querySelectorAll=key=>key==='[data-slide]'?slides:key==='[data-slide-to]'?dots:key==='[data-carousel-controls]'?controls:[];
+  const group=carousel.querySelector('[data-slides]');
+  group.querySelectorAll=key=>key==='[data-slide]'?slides:[];
+  const viewport=carousel.querySelector('[data-carousel-viewport]');
+  const track=carousel.querySelector('[data-carousel-track]');
   selectors['[data-carousel]']=carousel;
   const mediaQueries=new Map();
   const document={...element(),documentElement:{dataset:{theme:'dark'},classList:{add(){}}},hidden:false,
     querySelector:key=>selectors[key],querySelectorAll:key=>key==='[data-event], [data-menu]'?[choice]:[]};
-  const stored=new Map(); const timers=new Map();let timerId=0;
-  const window={...element(),scrollY:0,location:{assign(url){this.url=url;}},setTimeout(fn,delay){timers.set(++timerId,{fn,delay});return timerId;},clearTimeout(id){timers.delete(id);}};
+  const stored=new Map(); const frames=new Map();let frameId=0;let clock=0;
+  const window={...element(),scrollY:0,location:{assign(url){this.url=url;}}};
   const context={document,window,navigator:{connection:{saveData}},Date,encodeURIComponent,
     localStorage:{getItem(key){if(blockedStorage)throw Error('denied');return stored.get(key);},setItem(key,value){if(blockedStorage)throw Error('denied');stored.set(key,value);}},
     matchMedia(query){if(!mediaQueries.has(query)){const media=element();media.matches=query.includes('reduced-motion')&&reduced;mediaQueries.set(query,media);}return mediaQueries.get(query);},
-    requestAnimationFrame:fn=>fn(), FormData:class{constructor(form){this.form=form;}get(key){return this.form.data[key];}}
+    requestAnimationFrame(fn){frames.set(++frameId,fn);return frameId;},cancelAnimationFrame(id){frames.delete(id);},
+    FormData:class{constructor(form){this.form=form;}get(key){return this.form.data[key];}}
   };
   const observers=[];
   if(withObserver){
@@ -52,7 +59,10 @@ function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=f
     window.IntersectionObserver=context.IntersectionObserver;
   }
   vm.runInNewContext(script,context);
-  return {selectors,document,window,stored,mediaQueries,video,form,choice,carousel,slides,dots,controls,timers,observers,advance(){const pending=[...timers.values()];timers.clear();pending.forEach(({fn})=>fn());}};
+  function advance(ms=16){clock+=ms;const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(clock));}
+  advance(0);advance(0);
+  const position=()=>-Number(track.style.transform.match(/translate3d\(([^p]+)px/)[1]) || 0;
+  return {selectors,document,window,stored,mediaQueries,video,form,choice,carousel,slides,group,viewport,track,frames,observers,advance,position};
 }
 
 test('headings are unaccented, IDs unique, local links and media resolve',()=>{
@@ -74,58 +84,88 @@ test('the complete supplied chef story is preserved without rewriting',()=>{
   assert.equal(normalize(biography),normalize(readFileSync('content/chef-story.txt','utf8')));
 });
 
-test('carousel rotates, wraps and stops after manual selection',()=>{
-  const {carousel,slides,dots,controls,timers,advance}=setup();
-  assert.ok(controls.every(control=>!control.hidden));
-  assert.equal(slides.filter(slide=>!slide.hidden).length,1);
-  assert.equal(slides[0].hidden,false);
-  assert.equal([...timers.values()][0].delay,7000);
-  advance();assert.equal(slides[1].hidden,false);
-  dots[5].emit('click');assert.equal(slides[5].hidden,false);assert.equal(timers.size,0);
-  carousel.querySelector('[data-carousel-next]').emit('click');assert.equal(slides[0].hidden,false);
-  carousel.querySelector('[data-carousel-prev]').emit('click');assert.equal(slides[5].hidden,false);
-  assert.equal(dots[5].getAttribute('aria-current'),'true');
-  assert.match(carousel.querySelector('[data-carousel-status]').textContent,/6 de 6/);
+test('continuous strip keeps a constant leftward speed across the exact loop boundary',()=>{
+  const {carousel,track,group,position,advance}=setup();
+  assert.equal(carousel.querySelector('[data-carousel-controls]').hidden,false);
+  assert.equal(track.appended.length,1);
+  assert.equal(track.appended[0].getAttribute('aria-hidden'),'true');
+  assert.equal(track.appended[0].inert,true);
+  assert.equal(track.appended[0].querySelectorAll('[data-slide]').length,6);
+  let last=position(),wraps=0;
+  for(let frame=0;frame<9000;frame++){
+    advance();const next=position();if(next<last)wraps++;
+    assert.ok(Math.abs((next-last+group.width)%group.width - .544)<.000001);
+    last=next;
+  }
+  assert.equal(wraps,2);
 });
 
 test('carousel pauses on hover, focus, hidden tab and motion preference',()=>{
-  const {carousel,document,timers,mediaQueries}=setup();
-  carousel.emit('mouseenter');assert.equal(timers.size,0);
-  carousel.emit('mouseleave');assert.equal(timers.size,1);
-  document.hidden=true;document.emit('visibilitychange');assert.equal(timers.size,0);
-  document.hidden=false;document.emit('visibilitychange');assert.equal(timers.size,1);
-  carousel.emit('focusin');assert.equal(timers.size,0);
-  carousel.emit('mouseleave');assert.equal(timers.size,0);
-  carousel.querySelector('[data-carousel-play]').emit('click');assert.equal(timers.size,1);
-  mediaQueries.get('(prefers-reduced-motion: reduce)').emit('change',{matches:true});assert.equal(timers.size,0);
-  for(const options of [{reduced:true},{saveData:true}])assert.equal(setup(options).timers.size,0);
+  const {carousel,viewport,document,frames,mediaQueries,advance,position}=setup();
+  viewport.emit('mouseenter');assert.equal(frames.size,0);
+  viewport.emit('mouseleave');assert.equal(frames.size,1);
+  advance();advance();const before=position();
+  document.hidden=true;document.emit('visibilitychange');assert.equal(frames.size,0);
+  advance(10000);
+  document.hidden=false;document.emit('visibilitychange');advance();assert.equal(position(),before);
+  carousel.emit('focusin');assert.equal(frames.size,0);
+  viewport.emit('mouseleave');assert.equal(frames.size,0);
+  carousel.querySelector('[data-carousel-play]').emit('click');assert.equal(frames.size,1);
+  mediaQueries.get('(prefers-reduced-motion: reduce)').emit('change',{matches:true});assert.equal(frames.size,0);
+  for(const options of [{reduced:true},{saveData:true}])assert.equal(setup(options).frames.size,0);
 });
 
 test('pointer focus does not reverse the intended pause action',()=>{
-  const {carousel,timers}=setup();const play=carousel.querySelector('[data-carousel-play]');
+  const {carousel,frames}=setup();const play=carousel.querySelector('[data-carousel-play]');
   play.emit('pointerdown');carousel.emit('focusin');play.emit('click');
-  assert.equal(timers.size,0);assert.equal(play.getAttribute('aria-label'),'Reproduzir carrossel');
-  play.emit('pointerdown');play.emit('click');assert.equal(timers.size,1);
+  assert.equal(frames.size,0);assert.equal(play.getAttribute('aria-label'),'Reproduzir carrossel');
+  play.emit('pointerdown');play.emit('click');assert.equal(frames.size,1);
 });
 
 test('carousel only rotates while its section is visible',()=>{
-  const {carousel,timers,observers}=setup({withObserver:true});
-  const observer=observers.find(item=>item.target===carousel);
-  assert.equal(timers.size,0);
-  observer.callback([{isIntersecting:true}]);assert.equal(timers.size,1);
-  observer.callback([{isIntersecting:false}]);assert.equal(timers.size,0);
+  const {viewport,frames,observers}=setup({withObserver:true});
+  const observer=observers.find(item=>item.target===viewport);
+  assert.equal(frames.size,0);
+  observer.callback([{isIntersecting:true}]);assert.equal(frames.size,1);
+  observer.callback([{isIntersecting:false}]);assert.equal(frames.size,0);
 });
 
-test('carousel supports keyboard and horizontal swipe without hijacking vertical scroll',()=>{
-  const {carousel,slides,timers}=setup();let prevented=false;
-  carousel.emit('keydown',{key:'End',preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.equal(slides[5].hidden,false);
-  carousel.emit('keydown',{key:'ArrowRight',preventDefault(){}});assert.equal(slides[0].hidden,false);
-  const stage=carousel.querySelector('[data-slides]');
-  stage.emit('touchstart',{touches:[{clientX:200,clientY:200}]});
-  stage.emit('touchend',{changedTouches:[{clientX:80,clientY:210}]});assert.equal(slides[1].hidden,false);
-  stage.emit('touchstart',{touches:[{clientX:200,clientY:200}]});
-  stage.emit('touchend',{changedTouches:[{clientX:190,clientY:30}]});assert.equal(slides[1].hidden,false);
-  assert.equal(timers.size,0);
+test('manual navigation eases into place and keyboard navigation wraps',()=>{
+  const {carousel,viewport,frames,advance,position}=setup();
+  carousel.querySelector('[data-carousel-next]').emit('click');advance();advance(48);
+  assert.ok(position()>0 && position()<380);
+  for(let i=0;i<35;i++)advance();
+  assert.equal(position(),380);assert.equal(frames.size,0);
+  viewport.emit('keydown',{key:'End',preventDefault(){}});
+  for(let i=0;i<35;i++)advance();assert.equal(position(),1900);
+  viewport.emit('keydown',{key:'ArrowRight',preventDefault(){}});
+  for(let i=0;i<35;i++)advance();assert.equal(position(),0);
+  assert.match(carousel.querySelector('[data-carousel-status]').textContent,/1 de 6/);
+});
+
+test('horizontal dragging follows the pointer while vertical gestures remain untouched',()=>{
+  const {viewport,position,frames}=setup({reduced:true});
+  const start={isPrimary:true,button:0,pointerId:1,clientX:200,clientY:200};
+  viewport.emit('pointerdown',start);
+  viewport.emit('pointermove',{pointerId:1,clientX:80,clientY:210});assert.equal(position(),120);
+  viewport.emit('pointerup');
+  viewport.emit('pointerdown',start);
+  viewport.emit('pointermove',{pointerId:1,clientX:190,clientY:30});assert.equal(position(),120);
+  assert.equal(frames.size,0);
+});
+
+test('resizing preserves the same position in the sequence',()=>{
+  const {viewport,window,group,position}=setup({reduced:true});
+  viewport.emit('keydown',{key:'End',preventDefault(){}});assert.equal(position(),1900);
+  group.width=1800;window.emit('resize');assert.equal(position(),1500);
+});
+
+test('event choices are limited to the two requested categories and all prefills remain valid',()=>{
+  const field=html.match(/<select name="tipo"[^>]*>([\s\S]*?)<\/select>/)[1];
+  const values=[...field.matchAll(/<option[^>]*>([^<]+)<\/option>/g)].map(m=>m[1]);
+  assert.deepEqual(values,['Eventos Particulares','Eventos Corporativos']);
+  for(const [,value] of html.matchAll(/data-event="([^"]+)"/g))assert.ok(values.includes(value));
+  assert.doesNotMatch(html,/Role para descobrir|hero-scroll|partner-domain|Site informado indisponível|Site indisponível e endereço/);
 });
 test('theme switch changes palette metadata and persists the user choice',()=>{
   const {selectors,document,stored}=setup();
@@ -144,7 +184,7 @@ test('theme controls work when browser storage is unavailable',()=>{
 });
 test('video loads muted once and supports pause, resume and tab visibility',()=>{
   const {video,selectors,document}=setup();
-  assert.equal(video.src,'assets/media/hero-desktop.mp4');
+  assert.equal(video.src,'assets/media/hero-desktop-v5.mp4');
   assert.equal(video.muted,true);assert.equal(video.paused,false);assert.equal(video.loads,1);
   selectors['[data-video-toggle]'].emit('click');assert.equal(video.paused,true);
   document.hidden=true;document.emit('visibilitychange');
@@ -167,7 +207,7 @@ test('mobile menu closes with Escape and restores focus',()=>{
 });
 test('menu selection pre-fills the form and WhatsApp message retains event details',()=>{
   const {choice,form,window}=setup();choice.emit('click');
-  assert.equal(form.elements.tipo.value,'Evento corporativo');assert.equal(form.elements.menu.value,'Finger food');
+  assert.equal(form.elements.tipo.value,'Eventos Corporativos');assert.equal(form.elements.menu.value,'Finger food');
   form.emit('submit',{preventDefault(){}});
   const target=new URL(window.location.url);assert.equal(target.hostname,'wa.me');assert.equal(target.pathname,'/5511940197460');
   const message=target.searchParams.get('text');

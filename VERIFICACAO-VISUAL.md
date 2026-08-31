@@ -1,5 +1,23 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Faixa continua e novas midias — 31/08/2026 (revisao 5)
+
+O carrossel agora e uma faixa de seis fotografias com movimento continuo para a esquerda a 34 pixels por segundo. Uma segunda sequencia identica, fora da arvore de acessibilidade e sem foco, permite a passagem do fim ao inicio. A flutuacao suave de cada cartao usa a mesma fase nas duas sequencias. Os controles anterior/proximo fazem uma transicao suave; tambem ha pausa, teclado e arraste horizontal. Hover, foco, aba oculta e secao fora de vista interrompem o movimento intencionalmente. Movimento reduzido e economia de dados impedem o inicio automatico. Sem JavaScript, as fotos permanecem disponiveis em uma faixa com rolagem nativa.
+
+As fotos originais foram preservadas. O enquadramento dos cartoes agora usa `object-fit: cover`, sem barras laterais, com legendas em uma area de altura consistente. Removidos os indicadores de pagina e a faixa redundante de atributos. Removidos tambem o indicador "Role para descobrir", sua linha, dominios inativos e notas desatualizadas dos parceiros. O formulario oferece somente "Eventos Particulares" e "Eventos Corporativos", e todos os atalhos preenchem categorias validas.
+
+Nova logo do cabecalho: PNG fornecido em 1536 x 1024, com copia integral identica e variantes de 192/384 pixels, sem recorte, redesenho ou alteracao de cores. A caixa da logo respeita proporcao e limites do cabecalho nos dois temas. O PNG do rodape e a historia integral do chef foram mantidos.
+
+Video substituido pelo arquivo `Chef_plating_dish_for_video_202608311501.mp4`, nativo de 1280 x 720, 24 fps e oito segundos. Desktop preserva o fluxo de video sem recodificacao; celular recebe 960 x 540. O audio foi removido para uso como fundo silencioso. Novos posters foram extraidos do novo video. Mantidos loop, reproducao inline, pausa, preferencias de movimento/economia de dados e suspensao fora da tela. SHA256 do fluxo visual original e da entrega desktop coincidem: `2e465998c753855e4f7bea5e17fc3ef804549a5c34f570a5fa6d966f68caf58c`. Nao houve retoque nem ampliacao para 4K.
+
+### Verificacao desta revisao
+
+Dezessete testes automatizados passaram, incluindo dois ciclos completos sem variacao de velocidade, navegacao manual com suavizacao, pausa, foco, arraste, preservacao de progresso no redimensionamento, categorias do formulario, biografia e controles existentes. No navegador foram coletadas 140 amostras do movimento: a transicao de 2289,07 para 3,30276 pixels, em uma faixa de 2292 pixels, manteve o deslocamento esperado. A flutuacao da foto original e de sua copia coincidiu em todas as amostras. Todas as doze imagens da faixa carregaram. Confirmados avanco manual e movimento automatico tambem na janela mobile.
+
+Verificados ambos os temas nas larguras efetivamente reportadas de 320, 390, 560, 700, 702, 768, 1024, 1100, 1102, 1440, 1920, 2560 e 3840 pixels: sem transbordamento horizontal da pagina ou dos blocos principais, sem corte das legendas e com a logo dentro do cabecalho. Inspecionadas capturas da abertura clara desktop/mobile e dos cartoes escuros desktop/claros mobile. Reproducao, pausa e retomada do video, abertura/fechamento do menu mobile e preenchimento corporativo foram conferidos sem envio do formulario.
+
+Os testes de viewport foram feitos no navegador integrado, nao em aparelhos fisicos ou em uma matriz de diferentes motores. As verificacoes abaixo registram o historico anterior; a revisao 5 substitui o comportamento do carrossel e o video descritos nelas.
+
 ## Atualizacao de conteudo e carrossel — 31/08/2026
 
 Substituida a antiga composicao da panela por um carrossel com as seis fotografias fornecidas. As imagens sao exibidas integralmente, sem recorte ou nova edicao. O primeiro quadro mostra a feijoada sendo servida. Avanco automatico a cada sete segundos, botoes anterior/proximo, selecao direta, pausa, teclado e gesto horizontal. A rotacao para ao interagir, receber foco, ficar fora da tela ou ocultar a aba. Movimento reduzido e economia de dados desativam o inicio automatico.

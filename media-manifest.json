@@ -164,15 +164,17 @@
     "treatment": "Supplied complete logo; exact RGBA lossless master, resized delivery variants"
   },
   "video": {
+    "source_file": "Chef_plating_dish_for_video_202608311501.mp4",
+    "source_sha256": "4603f5c1ae339c5362480ab31b6fc0a4d5ea6b03c8a70e2afab11fb9d975d7ef",
     "source_resolution": [
-      1920,
-      1080
+      1280,
+      720
     ],
     "duration_seconds": 8,
     "audio_removed": true,
-    "desktop": "hero-desktop.mp4",
-    "mobile": "hero-mobile.mp4",
-    "native_4k": false
+    "desktop": "hero-desktop-v5.mp4",
+    "mobile": "hero-mobile-v5.mp4",
+    "treatment": "Desktop video stream copied without re-encoding; mobile downscaled to 960x540. No retouching or upscaling."
   },
   "experiencia-feijoada": {
     "source_size": [
@@ -264,5 +266,18 @@
       1536
     ],
     "treatment": "Exact supplied PNG with transparency, resized PNG delivery variants"
+  },
+  "logo-header-v5": {
+    "file": "logo-header-v5.png",
+    "source_size": [
+      1536,
+      1024
+    ],
+    "responsive_widths": [
+      192,
+      384,
+      1536
+    ],
+    "treatment": "Exact supplied transparent PNG. Delivery downscaling only; no crop, recoloring or regeneration."
   }
 }

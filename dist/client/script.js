@@ -61,7 +61,7 @@ function syncVideoButton() {
 }
 function loadVideo() {
   if (heroVideo.getAttribute('src')) return;
-  heroVideo.src = matchMedia('(max-width: 700px)').matches ? 'assets/media/hero-mobile.mp4' : 'assets/media/hero-desktop.mp4';
+  heroVideo.src = matchMedia('(max-width: 700px)').matches ? 'assets/media/hero-mobile-v5.mp4' : 'assets/media/hero-desktop-v5.mp4';
   heroVideo.muted = true;
   heroVideo.load();
 }
@@ -174,77 +174,147 @@ eventForm?.addEventListener('submit', (event) => {
   window.location.assign(whatsappUrl);
 });
 
-// Local carousel: no external library, no changes to supplied photographs.
+// Two identical groups form one continuous strip. Only the first is exposed
+// to assistive technology; wrapping by its measured width is visually seamless.
 const carousel = document.querySelector('[data-carousel]');
 if (carousel) {
-  const slides = [...carousel.querySelectorAll('[data-slide]')];
-  const dots = [...carousel.querySelectorAll('[data-slide-to]')];
+  const viewport = carousel.querySelector('[data-carousel-viewport]');
+  const track = carousel.querySelector('[data-carousel-track]');
+  const group = carousel.querySelector('[data-slides]');
+  const slides = [...group.querySelectorAll('[data-slide]')];
   const play = carousel.querySelector('[data-carousel-play]');
-  const stage = carousel.querySelector('[data-slides]');
   const status = carousel.querySelector('[data-carousel-status]');
-  let current = 0;
+  const duplicate = group.cloneNode(true);
+  duplicate.removeAttribute('data-slides');
+  duplicate.setAttribute('aria-hidden', 'true');
+  duplicate.inert = true;
+  track.append(duplicate);
+
+  let distance = 0;
+  let position = 0;
+  let frame = 0;
+  let previousTime;
+  let transition;
+  let pointer;
+  let playIntent;
   let paused = reducedMotion.matches || Boolean(navigator.connection?.saveData);
   let hovered = false;
   let visible = !('IntersectionObserver' in window);
-  let timer;
-  let touchStart;
-  let playIntent;
+  const speed = 34; // Pixels per second, independent of screen refresh rate.
+  const wrap = value => distance ? ((value % distance) + distance) % distance : 0;
+  const canMove = () => !paused && !hovered && visible && !document.hidden;
 
-  function syncRotation() {
-    window.clearTimeout(timer);
+  function paint() {
+    track.style.transform = `translate3d(${-wrap(position)}px,0,0)`;
+  }
+  function tick(time) {
+    frame = 0;
+    const elapsed = previousTime === undefined ? 0 : Math.min(time - previousTime, 64);
+    previousTime = time;
+    if (transition) {
+      transition.start ??= time;
+      const progress = Math.min((time - transition.start) / 480, 1);
+      const easing = .5 - Math.cos(Math.PI * progress) / 2;
+      position = transition.from + transition.delta * easing;
+      if (progress === 1) { transition = undefined; position = wrap(position); }
+    } else if (canMove()) {
+      position = wrap(position + elapsed * speed / 1000);
+    }
+    paint();
+    if (transition || canMove()) frame = requestAnimationFrame(tick);
+  }
+  function syncMotion() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    previousTime = undefined;
+    carousel.dataset.moving = String(canMove());
     play.setAttribute('aria-label', paused ? 'Reproduzir carrossel' : 'Pausar carrossel');
     play.querySelector('[data-carousel-play-label]').textContent = paused ? 'Reproduzir' : 'Pausar';
     play.querySelector('[data-carousel-play-icon]').textContent = paused ? '▷' : 'Ⅱ';
-    if (!paused && !hovered && visible && !document.hidden) timer = window.setTimeout(() => showSlide(current + 1), 7000);
+    if (!document.hidden && (transition || canMove())) frame = requestAnimationFrame(tick);
   }
-  function showSlide(index, manual = false) {
-    current = (index + slides.length) % slides.length;
-    slides.forEach((slide, i) => { slide.hidden = i !== current; });
-    dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === current)));
-    carousel.querySelector('[data-carousel-counter]').textContent = `${String(current + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
-    if (manual) {
-      paused = true;
-      status.textContent = `Foto ${slides[current].getAttribute('aria-label')}`;
-    }
-    syncRotation();
+  function measure() {
+    const width = group.getBoundingClientRect().width;
+    if (!width || width === distance) return;
+    position = distance ? wrap(position) / distance * width : 0;
+    distance = width;
+    transition = undefined;
+    paint();
+    syncMotion();
   }
+  function navigate(direction) {
+    const step = distance / slides.length;
+    if (!step) return;
+    const current = wrap(position) / step;
+    const index = direction === 'first' ? 0 : direction === 'last' ? slides.length - 1
+      : direction > 0 ? Math.floor(current + .02) + 1 : Math.ceil(current - .02) - 1;
+    paused = true;
+    position = wrap(position);
+    const target = index * step;
+    transition = reducedMotion.matches ? undefined : {from: position, delta: target - position};
+    if (!transition) { position = target; paint(); }
+    status.textContent = `Foto ${slides[(index + slides.length) % slides.length].getAttribute('aria-label')}`;
+    syncMotion();
+  }
+
   carousel.classList.add('carousel-ready');
-  carousel.querySelectorAll('[data-carousel-controls]').forEach(control => { control.hidden = false; });
-  carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => showSlide(current - 1, true));
-  carousel.querySelector('[data-carousel-next]').addEventListener('click', () => showSlide(current + 1, true));
-  dots.forEach(dot => dot.addEventListener('click', () => showSlide(Number(dot.dataset.slideTo), true)));
+  carousel.querySelector('[data-carousel-controls]').hidden = false;
+  carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => navigate(-1));
+  carousel.querySelector('[data-carousel-next]').addEventListener('click', () => navigate(1));
   play.addEventListener('pointerdown', () => { playIntent = !paused; });
   play.addEventListener('pointercancel', () => { playIntent = undefined; });
   play.addEventListener('click', () => {
     paused = typeof playIntent === 'boolean' ? playIntent : !paused;
     playIntent = undefined;
-    syncRotation();
+    transition = undefined;
+    syncMotion();
   });
-  carousel.addEventListener('mouseenter', () => { hovered = true; syncRotation(); });
-  carousel.addEventListener('mouseleave', () => { hovered = false; syncRotation(); });
-  // Keyboard focus stops rotation until the visitor explicitly restarts it.
-  carousel.addEventListener('focusin', () => { paused = true; syncRotation(); });
-  carousel.addEventListener('keydown', event => {
-    const destination = {ArrowRight: current + 1, ArrowLeft: current - 1, Home: 0, End: slides.length - 1}[event.key];
-    if (destination === undefined) return;
+  viewport.addEventListener('mouseenter', () => { hovered = true; syncMotion(); });
+  viewport.addEventListener('mouseleave', () => { hovered = false; syncMotion(); });
+  carousel.addEventListener('focusin', () => { paused = true; syncMotion(); });
+  viewport.addEventListener('keydown', event => {
+    const direction = {ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last'}[event.key];
+    if (direction === undefined) return;
     event.preventDefault();
-    showSlide(destination, true);
+    navigate(direction);
   });
-  stage.addEventListener('touchstart', event => {
-    touchStart = event.touches.length === 1 ? {x: event.touches[0].clientX, y: event.touches[0].clientY} : null;
-  }, {passive: true});
-  stage.addEventListener('touchend', event => {
-    if (!touchStart || !event.changedTouches.length) return;
-    const dx = event.changedTouches[0].clientX - touchStart.x;
-    const dy = event.changedTouches[0].clientY - touchStart.y;
-    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) showSlide(current + (dx < 0 ? 1 : -1), true);
-    touchStart = null;
-  }, {passive: true});
-  stage.addEventListener('touchcancel', () => { touchStart = null; });
-  document.addEventListener('visibilitychange', syncRotation);
-  reducedMotion.addEventListener('change', event => { if (event.matches) paused = true; syncRotation(); });
+  viewport.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || event.button !== 0) return;
+    pointer = {id: event.pointerId, x: event.clientX, y: event.clientY, position: wrap(position), dragging: false};
+  });
+  viewport.addEventListener('pointermove', event => {
+    if (!pointer || event.pointerId !== pointer.id) return;
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    if (!pointer.dragging) {
+      if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { pointer = undefined; return; }
+      if (Math.abs(dx) < 8) return;
+      pointer.dragging = true;
+      viewport.setPointerCapture(event.pointerId);
+      paused = true;
+      transition = undefined;
+      syncMotion();
+    }
+    position = pointer.position - dx;
+    paint();
+  });
+  const endPointer = () => { pointer = undefined; };
+  viewport.addEventListener('pointerup', endPointer);
+  viewport.addEventListener('pointercancel', endPointer);
+  viewport.addEventListener('lostpointercapture', endPointer);
+  document.addEventListener('visibilitychange', syncMotion);
+  reducedMotion.addEventListener('change', event => {
+    if (event.matches) { paused = true; transition = undefined; }
+    syncMotion();
+  });
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(entries => { visible = entries[0].isIntersecting; syncRotation(); }, {threshold: .15}).observe(carousel);
+    new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting;
+      if (!visible) transition = undefined;
+      syncMotion();
+    }, {threshold: .05}).observe(viewport);
   }
-  showSlide(0);
+  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(group);
+  else window.addEventListener('resize', measure, {passive: true});
+  measure();
 }
