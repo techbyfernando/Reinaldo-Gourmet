@@ -169,6 +169,13 @@ test('requested hero lines are removed and form selects use a consistent custom 
   for(const rule of ['appearance: none','padding-right: 32px','background-image','cursor: pointer']) assert.match(formSelect,new RegExp(rule));
   assert.match(html,/<script src="script\.js\?v=8"><\/script>/);
 });
+test('decorative numbering is removed and the menu section has a specific label',()=>{
+  assert.doesNotMatch(html,/<span>0[1-9]<\/span>|class="menu-index"|class="partner-number"/);
+  assert.match(html,/<div class="section-kicker">Cardapios<\/div>/);
+  assert.doesNotMatch(html,/<div class="section-kicker(?: reveal)?"><span>/);
+  assert.match(html,/href="styles\.css\?v=9"/);
+  assert.match(html,/href="theme\.css\?v=9"/);
+});
 test('theme switch changes palette metadata and persists the user choice',()=>{
   const {selectors,document,stored}=setup();
   const button=selectors['[data-theme-toggle]'];

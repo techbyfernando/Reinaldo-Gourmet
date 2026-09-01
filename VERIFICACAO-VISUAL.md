@@ -1,5 +1,11 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Titulos sem numeracao — 01/09/2026 (revisao 9)
+
+Removidas as numeracoes decorativas das chamadas de secao, dos cartoes de cardapio, das etapas do atendimento, dos formatos corporativos e dos parceiros. Datas, quantidades informativas e a numeracao acessivel do carrossel foram preservadas. O antigo titulo "02 Experiencias" passou a se chamar "Cardapios", em coerencia com o conteudo e com a navegacao principal.
+
+Os espacamentos que dependiam dos numeros foram recalibrados para que titulos, descricoes e divisorias continuem alinhados nos temas claro e escuro. O CSS recebeu uma nova versao de cache. No navegador integrado, os dois temas ficaram sem transbordamento horizontal e sem qualquer indice decorativo remanescente. Os dezenove testes automatizados passaram.
+
 ## Linhas da abertura e campo de evento — 01/09/2026 (revisao 8)
 
 Removidos exclusivamente o traco horizontal sob "Conhecer a experiencia" e o traco vertical ao lado de "2009". Os demais separadores e detalhes graficos da pagina foram preservados. O seletor "Tipo de evento" recebeu o mesmo dimensionamento, alinhamento e acabamento dos outros campos, com seta propria consistente entre navegadores.
