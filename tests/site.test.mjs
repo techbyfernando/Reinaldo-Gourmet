@@ -176,6 +176,11 @@ test('decorative numbering is removed and the menu section has a specific label'
   assert.match(html,/href="styles\.css\?v=9"/);
   assert.match(html,/href="theme\.css\?v=9"/);
 });
+test('the presentation build contains no advertising or analytics trackers',()=>{
+  assert.doesNotMatch(`${html}\n${script}`,/googletagmanager|google-analytics|connect\.facebook\.net|gtag\s*\(|fbq\s*\(/i);
+  assert.doesNotMatch(html,/\+150|150 empresas/i);
+  assert.match(html,/Lancamento no dominio oficial: atualizar og:image e adicionar canonical \+ og:url somente depois da migracao/);
+});
 test('theme switch changes palette metadata and persists the user choice',()=>{
   const {selectors,document,stored}=setup();
   const button=selectors['[data-theme-toggle]'];
