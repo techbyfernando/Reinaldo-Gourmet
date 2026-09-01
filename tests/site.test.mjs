@@ -24,7 +24,7 @@ function element() {
   };
 }
 function setup({reduced=false,saveData=false,blockedStorage=false,withObserver=false,mobile=false}={}) {
-  const selectors = Object.fromEntries(['[data-theme-toggle]','meta[name="theme-color"]','.menu-toggle','#mobile-menu','[data-hero-video]','[data-video-toggle]','[data-header]','[data-year]','input[name="data"]','#event-form','.hero'].map(key=>[key,element()]));
+  const selectors = Object.fromEntries(['[data-theme-toggle]','meta[name="theme-color"]','.menu-toggle','#mobile-menu','[data-hero-video]','[data-header]','[data-year]','input[name="data"]','#event-form','.hero'].map(key=>[key,element()]));
   const video = selectors['[data-hero-video]'];
   video.paused=true; video.loads=0;
   video.load=()=>video.loads++;
@@ -100,26 +100,17 @@ test('continuous strip keeps a constant leftward speed across the exact loop bou
   assert.equal(wraps,2);
 });
 
-test('carousel pauses on hover, focus, hidden tab and motion preference',()=>{
+test('carousel cannot be paused by hover or focus and respects browser lifecycle',()=>{
   const {carousel,viewport,document,frames,mediaQueries,advance,position}=setup();
-  viewport.emit('mouseenter');assert.equal(frames.size,0);
-  viewport.emit('mouseleave');assert.equal(frames.size,1);
+  viewport.emit('mouseenter');assert.equal(frames.size,1);
+  carousel.emit('focusin');assert.equal(frames.size,1);
   advance();advance();const before=position();
   document.hidden=true;document.emit('visibilitychange');assert.equal(frames.size,0);
   advance(10000);
   document.hidden=false;document.emit('visibilitychange');advance();assert.equal(position(),before);
-  carousel.emit('focusin');assert.equal(frames.size,0);
-  viewport.emit('mouseleave');assert.equal(frames.size,0);
-  carousel.querySelector('[data-carousel-play]').emit('click');assert.equal(frames.size,1);
+  assert.equal(frames.size,1);
   mediaQueries.get('(prefers-reduced-motion: reduce)').emit('change',{matches:true});assert.equal(frames.size,0);
   for(const options of [{reduced:true},{saveData:true}])assert.equal(setup(options).frames.size,0);
-});
-
-test('pointer focus does not reverse the intended pause action',()=>{
-  const {carousel,frames}=setup();const play=carousel.querySelector('[data-carousel-play]');
-  play.emit('pointerdown');carousel.emit('focusin');play.emit('click');
-  assert.equal(frames.size,0);assert.equal(play.getAttribute('aria-label'),'Reproduzir carrossel');
-  play.emit('pointerdown');play.emit('click');assert.equal(frames.size,1);
 });
 
 test('carousel only rotates while its section is visible',()=>{
@@ -130,28 +121,25 @@ test('carousel only rotates while its section is visible',()=>{
   observer.callback([{isIntersecting:false}]);assert.equal(frames.size,0);
 });
 
-test('manual navigation eases into place and keyboard navigation wraps',()=>{
+test('manual navigation eases into place and automatically continues',()=>{
   const {carousel,viewport,frames,advance,position}=setup();
   carousel.querySelector('[data-carousel-next]').emit('click');advance();advance(48);
   assert.ok(position()>0 && position()<380);
-  for(let i=0;i<35;i++)advance();
-  assert.equal(position(),380);assert.equal(frames.size,0);
+  for(let i=0;i<31;i++)advance();
+  assert.ok(position()>=380 && position()<385);assert.equal(frames.size,1);
+  const resumed=position();advance();assert.ok(position()>resumed);
   viewport.emit('keydown',{key:'End',preventDefault(){}});
-  for(let i=0;i<35;i++)advance();assert.equal(position(),1900);
+  for(let i=0;i<31;i++)advance();assert.ok(position()>=1900 && position()<1905);
   viewport.emit('keydown',{key:'ArrowRight',preventDefault(){}});
-  for(let i=0;i<35;i++)advance();assert.equal(position(),0);
+  for(let i=0;i<31;i++)advance();assert.ok(position()<5);
   assert.match(carousel.querySelector('[data-carousel-status]').textContent,/1 de 6/);
 });
 
-test('horizontal dragging follows the pointer while vertical gestures remain untouched',()=>{
-  const {viewport,position,frames}=setup({reduced:true});
-  const start={isPrimary:true,button:0,pointerId:1,clientX:200,clientY:200};
-  viewport.emit('pointerdown',start);
-  viewport.emit('pointermove',{pointerId:1,clientX:80,clientY:210});assert.equal(position(),120);
-  viewport.emit('pointerup');
-  viewport.emit('pointerdown',start);
-  viewport.emit('pointermove',{pointerId:1,clientX:190,clientY:30});assert.equal(position(),120);
-  assert.equal(frames.size,0);
+test('carousel has no drag gesture that can hold the motion',()=>{
+  const {viewport,frames}=setup();
+  assert.equal(viewport.listeners.pointerdown,undefined);
+  assert.equal(viewport.listeners.pointermove,undefined);
+  assert.equal(frames.size,1);
 });
 
 test('resizing preserves the same position in the sequence',()=>{
@@ -166,6 +154,10 @@ test('event choices are limited to the two requested categories and all prefills
   assert.deepEqual(values,['Eventos Particulares','Eventos Corporativos']);
   for(const [,value] of html.matchAll(/data-event="([^"]+)"/g))assert.ok(values.includes(value));
   assert.doesNotMatch(html,/Role para descobrir|hero-scroll|partner-domain|Site informado indisponível|Site indisponível e endereço/);
+});
+test('video and carousel expose no pause controls and the removed hero text is absent',()=>{
+  assert.doesNotMatch(html,/data-video-toggle|data-carousel-play|Cozinha movel personalizada|Pausar video|Pausar carrossel/);
+  assert.doesNotMatch(script,/videoToggle|carousel-play|mouseenter|focusin|playIntent|userPaused/);
 });
 test('theme switch changes palette metadata and persists the user choice',()=>{
   const {selectors,document,stored}=setup();
@@ -182,14 +174,10 @@ test('theme controls work when browser storage is unavailable',()=>{
   selectors['[data-theme-toggle]'].emit('click');
   assert.equal(document.documentElement.dataset.theme,'light');
 });
-test('video loads muted once and supports pause, resume and tab visibility',()=>{
-  const {video,selectors,document}=setup();
+test('video loads muted once and automatically resumes after tab visibility changes',()=>{
+  const {video,document}=setup();
   assert.equal(video.src,'assets/media/hero-desktop-v6.mp4');
   assert.equal(video.muted,true);assert.equal(video.paused,false);assert.equal(video.loads,1);
-  selectors['[data-video-toggle]'].emit('click');assert.equal(video.paused,true);
-  document.hidden=true;document.emit('visibilitychange');
-  document.hidden=false;document.emit('visibilitychange');assert.equal(video.paused,true);
-  selectors['[data-video-toggle]'].emit('click');assert.equal(video.paused,false);
   document.hidden=true;document.emit('visibilitychange');assert.equal(video.paused,true);
   document.hidden=false;document.emit('visibilitychange');assert.equal(video.paused,false);assert.equal(video.loads,1);
   const mobileVideo=setup({mobile:true}).video;
@@ -198,9 +186,9 @@ test('video loads muted once and supports pause, resume and tab visibility',()=>
 });
 test('reduced motion and data saver do not automatically download video',()=>{
   for(const options of [{reduced:true},{saveData:true}]){
-    const {video,selectors}=setup(options);
+    const {video}=setup(options);
     assert.equal(video.loads,0);
-    selectors['[data-video-toggle]'].emit('click');assert.equal(video.loads,1);assert.equal(video.paused,false);
+    assert.equal(video.paused,true);
   }
 });
 test('mobile menu closes with Escape and restores focus',()=>{

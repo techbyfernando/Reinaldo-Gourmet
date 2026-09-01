@@ -49,16 +49,10 @@ document.addEventListener('click', event => {
 matchMedia('(min-width: 1101px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
 
 const heroVideo = document.querySelector('[data-hero-video]');
-const videoToggle = document.querySelector('[data-video-toggle]');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-let userPaused = reducedMotion.matches || Boolean(navigator.connection?.saveData);
+const saveData = Boolean(navigator.connection?.saveData);
+let videoAutoplayDisabled = reducedMotion.matches || saveData;
 let heroVisible = true;
-function syncVideoButton() {
-  const paused = heroVideo.paused;
-  videoToggle.setAttribute('aria-label', paused ? 'Reproduzir video de fundo' : 'Pausar video de fundo');
-  videoToggle.querySelector('[data-video-icon]').textContent = paused ? '▷' : 'Ⅱ';
-  videoToggle.querySelector('[data-video-label]').textContent = paused ? 'Reproduzir video' : 'Pausar video';
-}
 function loadVideo() {
   if (heroVideo.getAttribute('src')) return;
   heroVideo.src = matchMedia('(max-width: 700px)').matches ? 'assets/media/hero-mobile-v6.mp4' : 'assets/media/hero-desktop-v6.mp4';
@@ -66,21 +60,19 @@ function loadVideo() {
   heroVideo.load();
 }
 function syncVideoPlayback() {
-  if (userPaused || !heroVisible || document.hidden) { heroVideo.pause(); return; }
+  if (videoAutoplayDisabled || !heroVisible || document.hidden) { heroVideo.pause(); return; }
   loadVideo();
-  heroVideo.play().catch(() => { syncVideoButton(); });
+  heroVideo.play().catch(() => {});
 }
-videoToggle.hidden = false;
-heroVideo.addEventListener('play', syncVideoButton);
-heroVideo.addEventListener('pause', syncVideoButton);
 heroVideo.addEventListener('playing', () => heroVideo.classList.add('is-playing'));
 heroVideo.addEventListener('error', () => {
   heroVideo.classList.remove('is-playing');
-  videoToggle.hidden = true;
 });
-videoToggle.addEventListener('click', () => { userPaused = !heroVideo.paused; syncVideoPlayback(); });
 document.addEventListener('visibilitychange', syncVideoPlayback);
-reducedMotion.addEventListener('change', event => { userPaused = event.matches; syncVideoPlayback(); });
+reducedMotion.addEventListener('change', event => {
+  videoAutoplayDisabled = event.matches || saveData;
+  syncVideoPlayback();
+});
 if ('IntersectionObserver' in window) {
   new IntersectionObserver(entries => {
     heroVisible = entries[0].isIntersecting;
@@ -182,7 +174,6 @@ if (carousel) {
   const track = carousel.querySelector('[data-carousel-track]');
   const group = carousel.querySelector('[data-slides]');
   const slides = [...group.querySelectorAll('[data-slide]')];
-  const play = carousel.querySelector('[data-carousel-play]');
   const status = carousel.querySelector('[data-carousel-status]');
   const duplicate = group.cloneNode(true);
   duplicate.removeAttribute('data-slides');
@@ -195,14 +186,11 @@ if (carousel) {
   let frame = 0;
   let previousTime;
   let transition;
-  let pointer;
-  let playIntent;
-  let paused = reducedMotion.matches || Boolean(navigator.connection?.saveData);
-  let hovered = false;
+  let carouselAutoplayDisabled = reducedMotion.matches || saveData;
   let visible = !('IntersectionObserver' in window);
   const speed = 34; // Pixels per second, independent of screen refresh rate.
   const wrap = value => distance ? ((value % distance) + distance) % distance : 0;
-  const canMove = () => !paused && !hovered && visible && !document.hidden;
+  const canMove = () => !carouselAutoplayDisabled && visible && !document.hidden;
 
   function paint() {
     track.style.transform = `translate3d(${-wrap(position)}px,0,0)`;
@@ -228,9 +216,6 @@ if (carousel) {
     frame = 0;
     previousTime = undefined;
     carousel.dataset.moving = String(canMove());
-    play.setAttribute('aria-label', paused ? 'Reproduzir carrossel' : 'Pausar carrossel');
-    play.querySelector('[data-carousel-play-label]').textContent = paused ? 'Reproduzir' : 'Pausar';
-    play.querySelector('[data-carousel-play-icon]').textContent = paused ? '▷' : 'Ⅱ';
     if (!document.hidden && (transition || canMove())) frame = requestAnimationFrame(tick);
   }
   function measure() {
@@ -248,7 +233,6 @@ if (carousel) {
     const current = wrap(position) / step;
     const index = direction === 'first' ? 0 : direction === 'last' ? slides.length - 1
       : direction > 0 ? Math.floor(current + .02) + 1 : Math.ceil(current - .02) - 1;
-    paused = true;
     position = wrap(position);
     const target = index * step;
     transition = reducedMotion.matches ? undefined : {from: position, delta: target - position};
@@ -261,50 +245,16 @@ if (carousel) {
   carousel.querySelector('[data-carousel-controls]').hidden = false;
   carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => navigate(-1));
   carousel.querySelector('[data-carousel-next]').addEventListener('click', () => navigate(1));
-  play.addEventListener('pointerdown', () => { playIntent = !paused; });
-  play.addEventListener('pointercancel', () => { playIntent = undefined; });
-  play.addEventListener('click', () => {
-    paused = typeof playIntent === 'boolean' ? playIntent : !paused;
-    playIntent = undefined;
-    transition = undefined;
-    syncMotion();
-  });
-  viewport.addEventListener('mouseenter', () => { hovered = true; syncMotion(); });
-  viewport.addEventListener('mouseleave', () => { hovered = false; syncMotion(); });
-  carousel.addEventListener('focusin', () => { paused = true; syncMotion(); });
   viewport.addEventListener('keydown', event => {
     const direction = {ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last'}[event.key];
     if (direction === undefined) return;
     event.preventDefault();
     navigate(direction);
   });
-  viewport.addEventListener('pointerdown', event => {
-    if (!event.isPrimary || event.button !== 0) return;
-    pointer = {id: event.pointerId, x: event.clientX, y: event.clientY, position: wrap(position), dragging: false};
-  });
-  viewport.addEventListener('pointermove', event => {
-    if (!pointer || event.pointerId !== pointer.id) return;
-    const dx = event.clientX - pointer.x;
-    const dy = event.clientY - pointer.y;
-    if (!pointer.dragging) {
-      if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { pointer = undefined; return; }
-      if (Math.abs(dx) < 8) return;
-      pointer.dragging = true;
-      viewport.setPointerCapture(event.pointerId);
-      paused = true;
-      transition = undefined;
-      syncMotion();
-    }
-    position = pointer.position - dx;
-    paint();
-  });
-  const endPointer = () => { pointer = undefined; };
-  viewport.addEventListener('pointerup', endPointer);
-  viewport.addEventListener('pointercancel', endPointer);
-  viewport.addEventListener('lostpointercapture', endPointer);
   document.addEventListener('visibilitychange', syncMotion);
   reducedMotion.addEventListener('change', event => {
-    if (event.matches) { paused = true; transition = undefined; }
+    carouselAutoplayDisabled = event.matches || saveData;
+    if (event.matches) transition = undefined;
     syncMotion();
   });
   if ('IntersectionObserver' in window) {

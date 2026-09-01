@@ -1,5 +1,11 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Reproducao sem controles de pausa — 01/09/2026 (revisao 7)
+
+Removidos integralmente os controles de pausa e reproducao do video e do carrossel, incluindo marcacao HTML, estilos e eventos JavaScript associados. O texto "Cozinha movel personalizada" tambem foi removido da abertura. O video continua automatico, silencioso e em loop. O carrossel nao para mais por hover, foco ou arraste; o gesto de arraste foi removido. As setas continuam disponiveis e, depois da transicao manual, o movimento continuo e retomado automaticamente. Aba oculta, conteudo fora da tela, preferencia de movimento reduzido e economia de dados continuam suspendendo processamento sem oferecer um controle de pausa na interface.
+
+No navegador, confirmados zero controles de pausa, ausencia do texto solicitado e video em reproducao. Com o cursor mantido sobre o carrossel por 1,1 segundo, a faixa avancou de 4,5322 para 44,1966 pixels e permaneceu marcada como ativa. Depois da seta, avancou novamente de 548,679 para 580,414 pixels. Os dezessete testes automatizados passaram, incluindo ausencia dos controles e continuidade por hover, foco e navegacao manual.
+
 ## Substituicao pelo novo video Full HD — 31/08/2026 (revisao 6)
 
 Substituido o video anterior pelo novo arquivo `Chef_plating_dish_for_video_202608311708.mp4`, confirmado em 1920 x 1080, 24 fps e oito segundos. O fundo desktop usa esta nova filmagem em Full HD. A entrega mobile deriva dela em 1280 x 720, para reduzir transferencia de dados. Ambos sao silenciosos e possuem inicio progressivo; os posters tambem foram extraidos do novo arquivo. Os nomes dos arquivos mudaram para evitar a exibicao da versao anterior em cache.

@@ -68,8 +68,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero .eyebrow { color: var(--gold-light); }
 .hero-signature { bottom: 115px; }
 .hero-signature strong { font-size: 3.7rem; }
-.video-toggle { position: absolute; right: clamp(24px,5.5vw,90px); bottom: 32px; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1px solid #ddd4; border-radius: 30px; background: #080806b3; color: #eee5d7; cursor: pointer; font-size: .66rem; letter-spacing: .04em; backdrop-filter: blur(8px); }
-.video-toggle [data-video-icon] { font-size: 1rem; }
 .hero :focus-visible { outline-color: var(--gold-light); }
 
 .proof-strip, .menus-section, .gallery { background: var(--surface-alt); }
@@ -232,7 +230,6 @@ h2 em { color: var(--accent); }
   .hero-content { padding: 180px 20px 180px; width: 100%; }
   h1 { font-size: clamp(3.2rem,15.2vw,5.4rem); line-height: .98; }
   .hero-copy { max-width: 380px; }
-  .video-toggle { bottom: 88px; right: 20px; }
   .hero-poster img, .hero-video { object-position: 62% center; }
   .menu-options { grid-template-columns: 1fr; }
   .menu-options a { min-height: 64px; }
