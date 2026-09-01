@@ -1,5 +1,11 @@
 # Revisao visual e responsiva — 30/08/2026
 
+## Linhas da abertura e campo de evento — 01/09/2026 (revisao 8)
+
+Removidos exclusivamente o traco horizontal sob "Conhecer a experiencia" e o traco vertical ao lado de "2009". Os demais separadores e detalhes graficos da pagina foram preservados. O seletor "Tipo de evento" recebeu o mesmo dimensionamento, alinhamento e acabamento dos outros campos, com seta propria consistente entre navegadores.
+
+Na verificacao mobile integrada, o campo ficou com 46,4 pixels de altura e exatamente os mesmos limites horizontais do campo de nome. As duas bordas solicitadas mediram zero pixel, sem transbordamento horizontal. O formulario apareceu normalmente ao entrar na secao. CSS e JavaScript receberam uma nova versao de cache para impedir que navegadores que ja visitaram o site misturem arquivos antigos com a pagina atual. Os dezoito testes automatizados passaram.
+
 ## Reproducao sem controles de pausa — 01/09/2026 (revisao 7)
 
 Removidos integralmente os controles de pausa e reproducao do video e do carrossel, incluindo marcacao HTML, estilos e eventos JavaScript associados. O texto "Cozinha movel personalizada" tambem foi removido da abertura. O video continua automatico, silencioso e em loop. O carrossel nao para mais por hover, foco ou arraste; o gesto de arraste foi removido. As setas continuam disponiveis e, depois da transicao manual, o movimento continuo e retomado automaticamente. Aba oculta, conteudo fora da tela, preferencia de movimento reduzido e economia de dados continuam suspendendo processamento sem oferecer um controle de pausa na interface.

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const script = readFileSync('script.js','utf8');
 const html = readFileSync('index.html','utf8');
+const styles = readFileSync('styles.css','utf8');
 
 function element() {
   return {
@@ -70,7 +71,7 @@ test('headings are unaccented, IDs unique, local links and media resolve',()=>{
   assert.equal(ids.length,new Set(ids).size);
   for(const match of html.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/g)) assert.doesNotMatch(match[1],/[À-ž]/);
   for(const match of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(match[1]),match[1]);
-  for(const match of html.matchAll(/(?:src|href|poster)="(assets\/[^"?#]+|(?:styles|theme)\.css|script\.js)"/g)) assert.ok(existsSync(match[1]),match[1]);
+  for(const match of html.matchAll(/(?:src|href|poster)="(assets\/[^"?#]+|(?:styles|theme)\.css|script\.js)(?:\?v=\d+)?"/g)) assert.ok(existsSync(match[1]),match[1]);
   for(const match of html.matchAll(/srcset="([^"]+)"/g)) for(const candidate of match[1].split(',')) assert.ok(existsSync(candidate.trim().split(/\s/)[0]),candidate);
   for(const css of ['styles.css','theme.css']) for(const match of readFileSync(css,'utf8').matchAll(/url\("(assets\/[^"?#]+)"\)/g)) assert.ok(existsSync(match[1]),match[1]);
   assert.doesNotMatch(html,/\+150|18 anos|assets\/chef-reinaldo.jpg/);
@@ -158,6 +159,15 @@ test('event choices are limited to the two requested categories and all prefills
 test('video and carousel expose no pause controls and the removed hero text is absent',()=>{
   assert.doesNotMatch(html,/data-video-toggle|data-carousel-play|Cozinha movel personalizada|Pausar video|Pausar carrossel/);
   assert.doesNotMatch(script,/videoToggle|carousel-play|mouseenter|focusin|playIntent|userPaused/);
+});
+test('requested hero lines are removed and form selects use a consistent custom control',()=>{
+  const signature=styles.match(/\.hero-signature \{([^}]+)\}/)[1];
+  const heroLink=styles.match(/\.text-link \{([^}]+)\}/)[1];
+  const formSelect=styles.match(/\.event-form select \{([^}]+)\}/)[1];
+  assert.doesNotMatch(signature,/border-left|padding-left/);
+  assert.doesNotMatch(heroLink,/border-bottom/);
+  for(const rule of ['appearance: none','padding-right: 32px','background-image','cursor: pointer']) assert.match(formSelect,new RegExp(rule));
+  assert.match(html,/<script src="script\.js\?v=8"><\/script>/);
 });
 test('theme switch changes palette metadata and persists the user choice',()=>{
   const {selectors,document,stored}=setup();
