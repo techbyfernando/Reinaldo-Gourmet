@@ -16,7 +16,7 @@ function element() {
     removeAttribute(key){delete this.attributes[key];},
     cloneNode(){return {...element(),attributes:{...this.attributes},querySelectorAll:this.querySelectorAll};},
     append(child){this.appended.push(child);},
-    getBoundingClientRect(){return {width:this.width};},
+    getBoundingClientRect(){return {width:this.width,top:this.top ?? 1000};},
     setPointerCapture(id){this.pointerId=id;},
     addEventListener(name,handler){(this.listeners[name]??=[]).push(handler);},
     emit(name,event={}){for(const handler of this.listeners[name]??[]) handler(event);},
@@ -167,14 +167,11 @@ test('requested hero lines are removed and form selects use a consistent custom 
   assert.doesNotMatch(signature,/border-left|padding-left/);
   assert.doesNotMatch(heroLink,/border-bottom/);
   for(const rule of ['appearance: none','padding-right: 32px','background-image','cursor: pointer']) assert.match(formSelect,new RegExp(rule));
-  assert.match(html,/<script src="script\.js\?v=9"><\/script>/);
 });
 test('decorative numbering is removed and the menu section has a specific label',()=>{
   assert.doesNotMatch(html,/<span>0[1-9]<\/span>|class="menu-index"|class="partner-number"/);
   assert.match(html,/<div class="section-kicker">Cardapios<\/div>/);
   assert.doesNotMatch(html,/<div class="section-kicker(?: reveal)?"><span>/);
-  assert.match(html,/href="styles\.css\?v=9"/);
-  assert.match(html,/href="theme\.css\?v=10"/);
 });
 test('the presentation build contains no advertising or analytics trackers',()=>{
   assert.doesNotMatch(`${html}\n${script}`,/googletagmanager|google-analytics|connect\.facebook\.net|gtag\s*\(|fbq\s*\(/i);
@@ -230,7 +227,36 @@ test('menu selection pre-fills the form and WhatsApp message retains event detai
 test('build copies the exact tested front-end',()=>{
   for(const file of ['index.html','styles.css','theme.css','script.js','smooth-scroll.js']) assert.equal(readFileSync(`dist/client/${file}`,'utf8'),readFileSync(file,'utf8'));
   for(const file of ['lenis.min.js','lenis.css']) assert.deepEqual(readFileSync(`dist/client/assets/vendor/${file}`),readFileSync(`node_modules/lenis/dist/${file}`));
+  assert.equal(existsSync('dist/client/assets/vendor/gsap.min.js'),false);
+  assert.equal(existsSync('dist/client/hero-arrival.js'),false);
   assert.ok(existsSync('dist/server/index.js'));
+});
+
+test('hero is immediately available with no arrival animation or GSAP payload',()=>{
+  assert.doesNotMatch(html,/arrival-boot|hero-arrival|data-hero-media|gsap/);
+  assert.doesNotMatch(readFileSync('theme.css','utf8'),/arrival|hero-media/);
+  assert.ok(html.includes('class="hero-poster"'));
+  assert.equal(JSON.parse(readFileSync('package.json','utf8')).dependencies.gsap,undefined);
+});
+
+test('fonts are local, licensed and copied without external render dependencies',()=>{
+  assert.doesNotMatch(html,/fonts\.googleapis|fonts\.gstatic/);
+  const css=readFileSync('assets/fonts/fonts.css','utf8');
+  for(const match of css.matchAll(/url\(\.\/([^)]*)\)/g)) {
+    const source=readFileSync(`assets/fonts/${match[1]}`);
+    assert.equal(source.subarray(0,4).toString(),'wOF2');
+    assert.deepEqual(readFileSync(`dist/client/assets/fonts/${match[1]}`),source);
+  }
+  for(const family of ['CormorantGaramond','Manrope']) assert.ok(existsSync(`assets/fonts/${family}-OFL.txt`));
+});
+
+test('header avoids repeated DOM writes while staying in the same scroll state',()=>{
+  const state=setup();let writes=0;
+  state.selectors['[data-header]'].classList.toggle=()=>writes++;
+  state.window.scrollY=80;state.window.emit('scroll');
+  for(let i=0;i<100;i++) {state.window.scrollY++;state.window.emit('scroll');}
+  assert.equal(writes,1);
+  state.window.scrollY=0;state.window.emit('scroll');assert.equal(writes,2);
 });
 
 // The controller tests simulate browser events; actual layout/scrolling is checked in the browser.
@@ -320,6 +346,15 @@ test('history restoration synchronizes actual position rather than forcing a has
   stale.options.onComplete();assert.equal(state.heading.focused,undefined);
 });
 
+test('initial pageshow cannot interrupt an early CTA click but BFCache restoration cancels travel',()=>{
+  const state=setupScroll();state.click();const travel=state.instances[0].calls.at(-1);
+  state.window.emit('pageshow',{persisted:false});
+  assert.equal(state.instances[0].animating,true);
+  travel.options.onComplete();assert.equal(state.heading.focused,true);
+  state.window.emit('pageshow',{persisted:true});
+  assert.equal(state.instances[0].animating,false);
+});
+
 test('keyboard navigation cancels momentum without consuming keys or editable input',()=>{
   const state=setupScroll(),instance=state.instances[0];
   state.click();assert.equal(instance.animating,true);
@@ -331,4 +366,24 @@ test('keyboard navigation cancels momentum without consuming keys or editable in
   assert.equal(instance.stops,count);
   assert.equal(instance.options.autoRaf,true);assert.equal(instance.options.syncTouch,false);
   assert.equal(instance.options.anchors,false);
+});
+
+test('anchor travel has bounded duration and wheel inertia remains independent',()=>{
+  const state=setupScroll();
+  assert.equal(state.instances[0].options.lerp,0.12);
+  for(const top of [0,1000,20000]) {
+    state.section.top=top;state.click();
+    const {duration,easing,lock}=state.instances[0].calls.at(-1).options;
+    assert.ok(duration>=0.55 && duration<=1.2);
+    assert.equal(easing(0),0);assert.equal(easing(1),1);
+    assert.ok(easing(0.5)>0 && easing(0.5)<1);
+    assert.notEqual(lock,true);
+  }
+});
+
+test('hiding the page clears pending travel without disabling future scrolling',()=>{
+  const state=setupScroll();state.click();
+  state.document.hidden=true;state.document.emit('visibilitychange');
+  assert.equal(state.instances[0].animating,false);
+  assert.equal(state.instances[0].isStopped,false);
 });

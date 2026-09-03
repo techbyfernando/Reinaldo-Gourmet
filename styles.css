@@ -26,9 +26,9 @@ button { color: inherit; }
 .site-header {
   position: fixed; z-index: 100; inset: 0 0 auto; height: 92px; padding: 0 clamp(24px, 5vw, 80px);
   display: grid; grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr); align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,.12); transition: height .35s ease, background .35s ease, backdrop-filter .35s ease;
+  border-bottom: 1px solid rgba(255,255,255,.12); transition: height .35s ease, background .35s ease;
 }
-.site-header.scrolled { height: 76px; background: rgba(11,11,9,.9); backdrop-filter: blur(18px); }
+.site-header.scrolled { height: 76px; background: rgba(11,11,9,.9); }
 .brand { width: 184px; }
 .brand img { width: 100%; height: auto; }
 .desktop-nav { display: flex; gap: clamp(22px, 2.8vw, 44px); font-size: .72rem; font-weight: 500; letter-spacing: .11em; text-transform: uppercase; }
@@ -83,7 +83,7 @@ h2 em { color: #a67b36; font-weight: 500; }
 .carousel-ready .carousel-viewport { overflow: hidden; }
 .carousel-viewport:focus-visible { outline-offset: 5px; }
 .carousel-track { display: flex; width: max-content; }
-.carousel-ready .carousel-track { will-change: transform; }
+.experience-carousel[data-moving="true"] .carousel-track { will-change: transform; }
 .experience-slides { display: flex; flex: 0 0 auto; align-items: stretch; gap: var(--card-gap); padding-right: var(--card-gap); }
 .experience-slide { flex: 0 0 var(--card-width); width: var(--card-width); margin: 0; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-raised); box-shadow: 0 14px 28px #00000016; }
 .experience-photo { aspect-ratio: 1 / 1.08; overflow: hidden; background: var(--surface-alt); }

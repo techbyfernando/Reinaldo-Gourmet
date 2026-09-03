@@ -22,7 +22,8 @@
     if (preference.matches) return;
     try {
       lenis = new window.Lenis({
-        autoRaf: true, smoothWheel: true, lerp: 0.1,
+        // Shorter inertia follows successive wheel/trackpad gestures without a long tail.
+        autoRaf: true, smoothWheel: true, lerp: 0.12,
         syncTouch: false, anchors: false, autoToggle: false, respectReducedMotion: true,
         prevent: node => Boolean(node.closest?.(editable))
       });
@@ -61,9 +62,13 @@
     cancelTravel();
     const token = navigation;
     lenis.resize();
+    const distance = Math.abs(destination.getBoundingClientRect().top);
     // Lenis reads the existing CSS scroll-padding/scroll-margin; no duplicate header offset.
     lenis.scrollTo(destination, {
       immediate: link.classList.contains('skip-link'),
+      // Short and long anchor trips both settle promptly, without locking the scroll.
+      duration: Math.min(1.2, 0.55 + distance / 9000),
+      easing: progress => 1 - Math.pow(1 - progress, 3),
       onComplete: () => { if (token === navigation) focusTarget(focus); }
     });
   });
@@ -77,12 +82,16 @@
   });
   document.addEventListener('focusin', () => { if (!focusingTarget) cancelTravel(); });
   // Keep native history/BFCache restoration instead of forcing a second anchor jump.
-  for (const event of ['popstate', 'hashchange', 'pageshow']) {
-    window.addEventListener(event, () => {
-      cancelTravel();
-      requestAnimationFrame(() => { lenis?.resize(); cancelTravel(); });
-    });
+  function restorePosition() {
+    cancelTravel();
+    requestAnimationFrame(() => { lenis?.resize(); cancelTravel(); });
   }
+  for (const event of ['popstate', 'hashchange']) window.addEventListener(event, restorePosition);
+  // The first pageshow may arrive after an early CTA click. Only restore BFCache here.
+  window.addEventListener('pageshow', event => { if (event.persisted) restorePosition(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelTravel();
+  });
   preference.addEventListener('change', configure);
   configure();
 })();

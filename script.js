@@ -83,9 +83,12 @@ if ('IntersectionObserver' in window) {
 requestAnimationFrame(() => requestAnimationFrame(syncVideoPlayback));
 
 const header = document.querySelector('[data-header]');
-
+let headerIsScrolled;
 const syncHeader = () => {
-  header?.classList.toggle('scrolled', window.scrollY > 24);
+  const scrolled = window.scrollY > 24;
+  if (scrolled === headerIsScrolled) return;
+  headerIsScrolled = scrolled;
+  header?.classList.toggle('scrolled', scrolled);
 };
 
 syncHeader();

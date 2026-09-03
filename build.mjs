@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import {resolve, sep} from 'node:path';
 
 const workspace = resolve('.');
@@ -9,11 +9,19 @@ mkdirSync('dist/client', { recursive: true });
 mkdirSync('dist/server', { recursive: true });
 mkdirSync('dist/client/assets', { recursive: true });
 
-for (const source of ['index.html', 'styles.css', 'theme.css', 'script.js', 'smooth-scroll.js']) {
+const sources = ['index.html', 'styles.css', 'theme.css', 'script.js', 'smooth-scroll.js'];
+for (const source of sources) {
   cpSync(source, `dist/client/${source}`);
 }
 
-cpSync('assets/media', 'dist/client/assets/media', {recursive: true});
+// Keep original media in the project, but publish only referenced variants.
+// This includes srcset candidates, video sources, favicon and the social preview.
+mkdirSync('dist/client/assets/media', {recursive: true});
+const media = new Set(sources.flatMap(source =>
+  [...readFileSync(source, 'utf8').matchAll(/assets\/media\/[\w.-]+/g)].map(match => match[0])
+));
+for (const file of media) cpSync(file, `dist/client/${file}`);
+cpSync('assets/fonts', 'dist/client/assets/fonts', {recursive: true});
 mkdirSync('dist/client/assets/vendor', {recursive: true});
 for (const file of ['lenis.min.js', 'lenis.css']) {
   cpSync(`node_modules/lenis/dist/${file}`, `dist/client/assets/vendor/${file}`);

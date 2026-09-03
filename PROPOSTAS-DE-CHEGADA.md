@@ -1,6 +1,8 @@
 # Reinaldo Quoos Gourmet at Home
 ## Cinco caminhos para uma chegada memorável
 
+**Decisão atual, 3 de setembro de 2026:** a abertura experimental foi rejeitada e removida a pedido do usuário. A página voltou ao hero completo, disponível imediatamente. Não implementar nenhuma das propostas abaixo sem uma nova solicitação. Consulte `VERIFICACAO-OTIMIZACAO.md` para as alterações e verificações atuais.
+
 Análise de 2 de setembro de 2026. As cinco cenas abaixo são propostas, ainda não implementadas. A alteração confirmada e executada nesta etapa é o Smooth Scroll.
 
 ## O que a página já comunica
