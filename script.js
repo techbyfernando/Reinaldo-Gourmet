@@ -134,7 +134,7 @@ document.querySelectorAll('[data-event], [data-menu]').forEach(link => {
     if (link.dataset.event) eventForm.elements.tipo.value = link.dataset.event;
     if (link.dataset.menu) eventForm.elements.menu.value = link.dataset.menu;
     const nameInput = eventForm.elements.nome;
-    nameInput.focus({preventScroll: true});
+    if (document.documentElement.dataset.scrollMode !== 'smooth') nameInput.focus({preventScroll: true});
   });
 });
 

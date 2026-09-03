@@ -6,3 +6,4 @@ assets/manifest.json
 .tools/
 .site-stage/
 site-release.tar.gz
+node_modules/

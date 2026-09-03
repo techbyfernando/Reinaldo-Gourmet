@@ -9,11 +9,16 @@ mkdirSync('dist/client', { recursive: true });
 mkdirSync('dist/server', { recursive: true });
 mkdirSync('dist/client/assets', { recursive: true });
 
-for (const source of ['index.html', 'styles.css', 'theme.css', 'script.js']) {
+for (const source of ['index.html', 'styles.css', 'theme.css', 'script.js', 'smooth-scroll.js']) {
   cpSync(source, `dist/client/${source}`);
 }
 
 cpSync('assets/media', 'dist/client/assets/media', {recursive: true});
+mkdirSync('dist/client/assets/vendor', {recursive: true});
+for (const file of ['lenis.min.js', 'lenis.css']) {
+  cpSync(`node_modules/lenis/dist/${file}`, `dist/client/assets/vendor/${file}`);
+}
+cpSync('node_modules/lenis/LICENSE', 'dist/client/assets/vendor/lenis.LICENSE.txt');
 
 writeFileSync('dist/server/index.js', `export default {
   async fetch(request, env) {

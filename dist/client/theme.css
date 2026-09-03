@@ -253,3 +253,8 @@ h2 em { color: var(--accent); }
 @media(prefers-reduced-motion:reduce) {
   .js .reveal { opacity: 1; transform: none; }
 }
+/* Lenis owns wheel easing only while active; retain the native CSS fallback. */
+html.lenis { scroll-behavior: auto; }
+.js .reveal:focus-within { opacity: 1; transform: none; }
+/* Keep the form's anchor position stable while its reveal finishes. */
+.js .event-form.reveal { transform: none; }

@@ -71,7 +71,7 @@ test('headings are unaccented, IDs unique, local links and media resolve',()=>{
   assert.equal(ids.length,new Set(ids).size);
   for(const match of html.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/g)) assert.doesNotMatch(match[1],/[À-ž]/);
   for(const match of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(match[1]),match[1]);
-  for(const match of html.matchAll(/(?:src|href|poster)="(assets\/[^"?#]+|(?:styles|theme)\.css|script\.js)(?:\?v=\d+)?"/g)) assert.ok(existsSync(match[1]),match[1]);
+  for(const match of html.matchAll(/(?:src|href|poster)="(assets\/[^"?#]+|(?:styles|theme)\.css|(?:script|smooth-scroll)\.js)(?:\?v=\d+)?"/g)) assert.ok(existsSync(`dist/client/${match[1]}`),match[1]);
   for(const match of html.matchAll(/srcset="([^"]+)"/g)) for(const candidate of match[1].split(',')) assert.ok(existsSync(candidate.trim().split(/\s/)[0]),candidate);
   for(const css of ['styles.css','theme.css']) for(const match of readFileSync(css,'utf8').matchAll(/url\("(assets\/[^"?#]+)"\)/g)) assert.ok(existsSync(match[1]),match[1]);
   assert.doesNotMatch(html,/\+150|18 anos|assets\/chef-reinaldo.jpg/);
@@ -167,14 +167,14 @@ test('requested hero lines are removed and form selects use a consistent custom 
   assert.doesNotMatch(signature,/border-left|padding-left/);
   assert.doesNotMatch(heroLink,/border-bottom/);
   for(const rule of ['appearance: none','padding-right: 32px','background-image','cursor: pointer']) assert.match(formSelect,new RegExp(rule));
-  assert.match(html,/<script src="script\.js\?v=8"><\/script>/);
+  assert.match(html,/<script src="script\.js\?v=9"><\/script>/);
 });
 test('decorative numbering is removed and the menu section has a specific label',()=>{
   assert.doesNotMatch(html,/<span>0[1-9]<\/span>|class="menu-index"|class="partner-number"/);
   assert.match(html,/<div class="section-kicker">Cardapios<\/div>/);
   assert.doesNotMatch(html,/<div class="section-kicker(?: reveal)?"><span>/);
   assert.match(html,/href="styles\.css\?v=9"/);
-  assert.match(html,/href="theme\.css\?v=9"/);
+  assert.match(html,/href="theme\.css\?v=10"/);
 });
 test('the presentation build contains no advertising or analytics trackers',()=>{
   assert.doesNotMatch(`${html}\n${script}`,/googletagmanager|google-analytics|connect\.facebook\.net|gtag\s*\(|fbq\s*\(/i);
@@ -228,6 +228,107 @@ test('menu selection pre-fills the form and WhatsApp message retains event detai
   window.location.url=null;form.valid=false;form.emit('submit',{preventDefault(){}});assert.equal(window.location.url,null);
 });
 test('build copies the exact tested front-end',()=>{
-  for(const file of ['index.html','styles.css','theme.css','script.js']) assert.equal(readFileSync(`dist/client/${file}`,'utf8'),readFileSync(file,'utf8'));
+  for(const file of ['index.html','styles.css','theme.css','script.js','smooth-scroll.js']) assert.equal(readFileSync(`dist/client/${file}`,'utf8'),readFileSync(file,'utf8'));
+  for(const file of ['lenis.min.js','lenis.css']) assert.deepEqual(readFileSync(`dist/client/assets/vendor/${file}`),readFileSync(`node_modules/lenis/dist/${file}`));
   assert.ok(existsSync('dist/server/index.js'));
+});
+
+// The controller tests simulate browser events; actual layout/scrolling is checked in the browser.
+function setupScroll({reduced=false,missing=false,broken=false}={}) {
+  const instances=[],frames=[];
+  const preference={...element(),matches:reduced};
+  const heading={...element(),hasAttribute(){return false;},matches(){return false;}};
+  const section={...element(),querySelector(){return heading;}};
+  const name={...element(),hasAttribute(){return false;},matches(){return true;}};
+  const form={...element(),elements:{nome:name}};
+  const location=new URL('http://localhost:4173/');
+  const document={...element(),documentElement:{dataset:{}},getElementById(id){return ({experiencia:section,contato:section,'event-form':form})[id];}};
+  const window={...element(),location,scrollY:480};
+  if(!missing) window.Lenis=class {
+    constructor(options){if(broken)throw Error('Unavailable');this.options=options;this.calls=[];instances.push(this);}
+    scrollTo(target,options){this.calls.push({target,options});this.animating=!options.immediate;}
+    stop(){this.isStopped=true;this.animating=false;this.resetScroll=window.scrollY;this.stops=(this.stops||0)+1;}
+    start(){this.isStopped=false;}
+    resize(){this.resized=true;}
+    destroy(){this.destroyed=true;}
+  };
+  const history={entries:[],pushState(_,__,hash){this.entries.push(hash);location.hash=hash;}};
+  vm.runInNewContext(readFileSync('smooth-scroll.js','utf8'),{window,document,location,history,URL,matchMedia:()=>preference,requestAnimationFrame:fn=>frames.push(fn)});
+  function click({href='#experiencia',prefill=false,target='',download=false,...overrides}={}) {
+    const link={href,target,hasAttribute:key=>key==='download'&&download,matches:()=>prefill,classList:{contains:()=>false}};
+    const event={button:0,target:{closest:()=>link},preventDefault(){this.prevented=true;},...overrides};
+    document.emit('click',event);return event;
+  }
+  return {instances,frames,preference,document,window,history,section,heading,name,form,click};
+}
+
+test('smooth scrolling is optional and follows live reduced motion preferences',()=>{
+  for(const options of [{missing:true},{broken:true},{reduced:true}]) {
+    const state=setupScroll(options);
+    assert.equal(state.instances.length,0);assert.ok(!state.click().prevented);
+  }
+  const state=setupScroll();
+  assert.equal(state.instances.length,1);
+  assert.equal(state.document.documentElement.dataset.scrollMode,'smooth');
+  state.preference.matches=true;state.preference.emit('change');
+  assert.equal(state.instances[0].destroyed,true);
+  assert.equal(state.document.documentElement.dataset.scrollMode,'native');
+  assert.ok(!state.click().prevented);
+  state.preference.matches=false;state.preference.emit('change');
+  assert.equal(state.instances.length,2);
+});
+
+test('same-page anchors update history and focus only after arrival without a second header offset',()=>{
+  const state=setupScroll();assert.equal(state.click().prevented,true);
+  const travel=state.instances[0].calls.at(-1);
+  assert.equal(travel.target,state.section);assert.equal(travel.options.offset,undefined);
+  assert.equal(state.heading.focused,undefined);
+  travel.options.onComplete();assert.equal(state.heading.focused,true);
+  assert.equal(state.heading.attributes.tabindex,'-1');
+  state.heading.emit('blur');assert.equal(state.heading.attributes.tabindex,undefined);
+  state.click();assert.deepEqual(state.history.entries,['#experiencia']);
+});
+
+test('external, modified, downloads, missing anchors and different queries retain native navigation',()=>{
+  const state=setupScroll();
+  for(const options of [{href:'https://example.com/#experiencia'},{href:'/?q=1#experiencia'},{href:'/other#experiencia'},{href:'#missing'},{href:'#%ZZ'},{ctrlKey:true},{metaKey:true},{shiftKey:true},{altKey:true},{button:1},{defaultPrevented:true},{download:true},{target:'_blank'}]) assert.ok(!state.click(options).prevented);
+  assert.deepEqual(state.history.entries,[]);
+});
+
+test('prefilled contact links move to the form and focus the name after arrival',()=>{
+  const state=setupScroll();state.click({href:'#contato',prefill:true});
+  const travel=state.instances[0].calls.at(-1);
+  assert.equal(travel.target,state.form);assert.equal(state.name.focused,undefined);
+  travel.options.onComplete();assert.equal(state.name.focused,true);
+  const main=setup();main.document.documentElement.dataset.scrollMode='smooth';main.choice.emit('click');
+  assert.equal(main.form.elements.nome.focused,undefined);
+  assert.equal(main.form.elements.tipo.value,'Eventos Corporativos');
+});
+
+test('a wheel gesture or new link invalidates stale navigation focus callbacks',()=>{
+  const state=setupScroll();state.click();const first=state.instances[0].calls.at(-1);
+  state.document.emit('wheel');first.options.onComplete();assert.equal(state.heading.focused,undefined);
+  state.click();const second=state.instances[0].calls.at(-1);
+  state.click({href:'#contato',prefill:true});second.options.onComplete();assert.equal(state.heading.focused,undefined);
+});
+
+test('history restoration synchronizes actual position rather than forcing a hash destination',()=>{
+  const state=setupScroll();state.click();const stale=state.instances[0].calls.at(-1);
+  state.window.emit('popstate');state.window.scrollY=920;state.frames.forEach(fn=>fn());
+  assert.equal(state.instances[0].resetScroll,920);
+  assert.equal(state.instances[0].animating,false);
+  stale.options.onComplete();assert.equal(state.heading.focused,undefined);
+});
+
+test('keyboard navigation cancels momentum without consuming keys or editable input',()=>{
+  const state=setupScroll(),instance=state.instances[0];
+  state.click();assert.equal(instance.animating,true);
+  state.document.emit('keydown',{key:'PageDown',target:{closest:()=>null}});
+  assert.equal(instance.animating,false);assert.equal(instance.isStopped,false);
+  assert.equal(instance.resetScroll,480);
+  const count=instance.stops;
+  state.document.emit('keydown',{key:'ArrowDown',target:{closest:()=>({})}});
+  assert.equal(instance.stops,count);
+  assert.equal(instance.options.autoRaf,true);assert.equal(instance.options.syncTouch,false);
+  assert.equal(instance.options.anchors,false);
 });
