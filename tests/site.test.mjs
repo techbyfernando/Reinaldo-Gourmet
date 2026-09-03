@@ -387,3 +387,17 @@ test('hiding the page clears pending travel without disabling future scrolling',
   assert.equal(state.instances[0].animating,false);
   assert.equal(state.instances[0].isStopped,false);
 });
+
+test('interface icons are accessible vectors instead of platform emoji glyphs',()=>{
+  assert.doesNotMatch(html + script, /[☀☾↗↘↓↑←→]/u);
+  const icons = [...html.matchAll(/<svg\b[^>]*class="ui-icon"[^>]*>/g)];
+  assert.ok(icons.length > 20);
+  for (const [tag] of icons) {
+    assert.match(tag, /aria-hidden="true"/);
+    assert.match(tag, /focusable="false"/);
+    assert.match(tag, /stroke="currentColor"/);
+  }
+  assert.match(html, /data-icon-sun/);
+  assert.match(html, /data-icon-moon/);
+  assert.doesNotMatch(script, /\[data-theme-icon\].*textContent/);
+});

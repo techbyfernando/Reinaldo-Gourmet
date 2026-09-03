@@ -10,7 +10,6 @@ function applyTheme(theme) {
   themeToggle.setAttribute('aria-label', `Ativar tema ${next}`);
   themeToggle.title = `Ativar tema ${next}`;
   themeToggle.querySelector('[data-theme-label]').textContent = next === 'claro' ? 'Claro' : 'Escuro';
-  themeToggle.querySelector('[data-theme-icon]').textContent = theme === 'dark' ? '☀' : '☾';
   document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#0b0b09' : '#faf8f3';
 }
 applyTheme(document.documentElement.dataset.theme);

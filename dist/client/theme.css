@@ -258,3 +258,10 @@ html.lenis { scroll-behavior: auto; }
 .js .reveal:focus-within { opacity: 1; transform: none; }
 /* Keep the form's anchor position stable while its reveal finishes. */
 .js .event-form.reveal { transform: none; }
+
+/* Vector icons stay monochrome across desktop, iOS and Android. */
+.ui-icon { display: inline-block; width: 1em; height: 1em; flex-shrink: 0; vertical-align: -0.125em; }
+.theme-toggle [data-theme-icon] { display: inline-flex; align-items: center; justify-content: center; }
+[data-icon-moon] { display: none; }
+[data-theme="light"] [data-icon-sun] { display: none; }
+[data-theme="light"] [data-icon-moon] { display: inline-block; }

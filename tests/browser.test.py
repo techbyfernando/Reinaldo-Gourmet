@@ -225,6 +225,65 @@ class SiteBrowserTests(unittest.TestCase):
         self.assertAlmostEqual(page.evaluate('scrollY'), 300, delta=2)
 
 
+    def test_13_svg_icons_in_both_themes(self):
+        page = self.page(width=390)
+        self.load(page)
+        for theme in ('dark', 'light'):
+            if theme == 'light':
+                page.locator('[data-theme-toggle]').click()
+            active = 'sun' if theme == 'dark' else 'moon'
+            inactive = 'moon' if theme == 'dark' else 'sun'
+            expect(page.locator(f'[data-icon-{active}]')).to_be_visible()
+            expect(page.locator(f'[data-icon-{inactive}]')).to_be_hidden()
+            icons = page.locator('.ui-icon')
+            self.assertGreater(icons.count(), 20)
+            self.assertTrue(icons.evaluate_all("els => els.every(el => el.namespaceURI === 'http://www.w3.org/2000/svg' && el.getAttribute('aria-hidden') === 'true')"))
+            page.screenshot(path=str(ARTIFACTS / f'icons-{theme}-390.png'), animations='disabled')
+
+    def test_14_form_rules_and_whatsapp_payload(self):
+        page = self.page(reduced=True)
+        self.load(page, '#contato')
+        form = page.locator('#event-form')
+        self.assertFalse(form.evaluate('el => el.checkValidity()'))
+        name = page.locator('[name=nome]')
+        city = page.locator('[name=cidade]')
+        guests = page.locator('[name=convidados]')
+        date = page.locator('[name=data]')
+        name.fill('Maria & João')
+        city.fill('São Paulo')
+        guests.fill('30')
+        self.assertTrue(form.evaluate('el => el.checkValidity()'))
+        for field in (name, city):
+            original = field.input_value()
+            field.fill('   ')
+            self.assertFalse(field.evaluate('el => el.checkValidity()'))
+            field.fill(original)
+        for invalid in ('0', '-1', '1.5'):
+            guests.fill(invalid)
+            self.assertFalse(guests.evaluate('el => el.checkValidity()'))
+        guests.fill('30')
+        date.fill('2000-01-01')
+        self.assertFalse(date.evaluate('el => el.checkValidity()'))
+        date.fill(date.get_attribute('min'))
+        self.assertTrue(date.evaluate('el => el.checkValidity()'))
+        date.fill('')
+        self.assertEqual(page.locator('[name=tipo] option').all_text_contents(), ['Eventos Particulares', 'Eventos Corporativos'])
+        captured = []
+        page.route('https://wa.me/**', lambda route: (captured.append(route.request.url), route.fulfill(status=200, body='Local test: no message sent')))
+        page.locator('[name=tipo]').select_option('Eventos Corporativos')
+        page.locator('[name=menu]').select_option('Feijoada')
+        page.locator('[name=detalhes]').fill('Sem amendoim & sem leite')
+        form.locator('button[type=submit]').click()
+        page.wait_for_url('https://wa.me/**')
+        from urllib.parse import parse_qs
+        self.assertEqual(len(captured), 1)
+        target = urlparse(captured[0])
+        self.assertEqual(target.path, '/5511940197460')
+        message = parse_qs(target.query)['text'][0]
+        for value in ('Maria & João', 'São Paulo', '30', 'a definir', 'Eventos Corporativos', 'Feijoada', 'Sem amendoim & sem leite'):
+            self.assertIn(value, message)
+
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
